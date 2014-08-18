@@ -1,14 +1,12 @@
-PREFIX=/usr/local/zimg
-PWP=$(shell pwd)
+CC := g++
+OBJECTS := main.cpp LocalStorage.o
 
-all:
-	mkdir -p build/zimg
-	cd build/zimg; cmake $(PWD)/src; make; cp zimg $(PWD)/bin
+main: $(OBJECTS)
+	$(CC) $(OBJECTS) -o main
+	
+LocalStorage.o: LocalStorage.h LocalStorage.cpp StorageBase.h
+	$(CC) LocalStorage.cpp -c
 
-debug:
-	mkdir -p build/zimg
-	cd build/zimg; cmake -DCMAKE_BUILD_TYPE=Debug $(PWD)/src; make; cp zimg $(PWD)/bin
 
 clean:
-	rm -rf build
-	rm bin/zimg
+	rm main *.o
