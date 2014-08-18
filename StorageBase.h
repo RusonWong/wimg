@@ -5,11 +5,11 @@
 #include<iostream>
 
 
-class StorageClient
+class StorageBase
 {
 public:
 	virtual int save_file(const char* buff, size_t file_size, std::string name) = 0;
-	virtual int get_file(std::string key, char* &buffptr,size_t len) = 0;
+	virtual int get_file(std::string key, char* &buffptr,size_t& len) = 0;
 };
 
 #endif
