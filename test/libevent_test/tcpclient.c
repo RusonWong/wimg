@@ -10,7 +10,7 @@
 
 #define DEFAULT_PORT 9999
 #define SERVER_ADDR "127.0.0.1"
-#define THREAD_COUNT 100
+#define THREAD_COUNT 1
 
 void test()
 {
@@ -43,10 +43,10 @@ void test()
 //send parameter
     //char* imgId = "1"
     //sLen = send(cClient, imgId,     
-    int count = 1000;
+    int count = 1;
     while(count){  
-	    char* buff = "hello, are you server.fufufuffufufufkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
-	    cLen = send(cClient, buff, 300,0);
+	    char* buff = "hello, are you server.fufufuff";
+	    cLen = send(cClient, buff, 20,0);
 	    if((cLen < 0)||(cLen == 0))
 	    {
 		  printf("send() failure!\n");
