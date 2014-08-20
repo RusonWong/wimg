@@ -2,6 +2,8 @@ CC	:= g++
 CFLAGS	:= -levent -pthread
 OBJECTS	:= main.cpp ThreadsMain.o EventQueue.o EventHandler.o WorkerThreads.o EntityManager.o
 
+VPATH = ../
+
 tpm: $(OBJECTS)
 	$(CC) $(OBJECTS) -o wnode_server $(CFLAGS)
 

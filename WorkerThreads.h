@@ -1,13 +1,13 @@
 #ifndef WORKER_THREADS
 #define WORKER_THREADS
 
-#include"LibeventThread.h"
-#include<event.h>
-#include<pthread.h>
-#include"../EventHandler.h"
+#include "LibeventThread.h"
+#include <event.h>
+#include <pthread.h>
+#include "EventHandler.h"
 #include"EventQueue.h"
-#include<unistd.h>
-#include<string.h>
+#include <unistd.h>
+#include <string.h>
 
 #define IS_UDP(x) (x==udp_transport)
 
