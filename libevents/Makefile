@@ -1,21 +1,24 @@
 CC	:= g++
 CFLAGS	:= -levent -pthread
-OBJECTS	:= main.cpp EventQueue.o EventHandler.o WorkerThreads.o EntityManager.o
+OBJECTS	:= main.cpp ThreadsMain.o EventQueue.o EventHandler.o WorkerThreads.o EntityManager.o
 
 tpm: $(OBJECTS)
-	$(CC) $(OBJECTS) -o tpm $(CFLAGS)
+	$(CC) $(OBJECTS) -o wnode_server $(CFLAGS)
 
-EventQueue.o: EventQueue.cpp EventQueue.h EntityManager.o
+ThreadsMain.o:ThreadsMain.cpp ThreadsMain.h 
+	$(CC) ThreadsMain.cpp -c
+
+EventQueue.o: EventQueue.cpp EventQueue.h 
 	$(CC) EventQueue.cpp -c
 
-EventHandler.o: EventHandler.cpp EventHandler.h LibeventThread.h EntityManager.o
+EventHandler.o: EventHandler.cpp EventHandler.h LibeventThread.h 
 	$(CC) EventHandler.cpp -c
 
-WorkerThreads.o: WorkerThreads.cpp WorkerThreads.h EntityManager.o
+WorkerThreads.o: WorkerThreads.cpp WorkerThreads.h
 	$(CC) WorkerThreads.cpp -c
 
 EntityManager.o: EntityManager.cpp EntityManager.h
 	$(CC) EntityManager.cpp -c
 
 clean:
-	rm tpm *.o
+	rm wnode_server *.o

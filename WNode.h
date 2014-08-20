@@ -5,6 +5,9 @@
 
 class WNode
 {
+private:
+	
+
 public:
 	WNode();
 	~WNode();

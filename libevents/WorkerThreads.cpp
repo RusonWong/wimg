@@ -84,7 +84,33 @@ void WorkerThreads::setup_event_thread(LIBEVENT_THREAD *me)
 
 	eq_init(me->new_conn_queue);
 }
-	
+
+//handle socket event
+void handle_connection(const int sfd, struct event_base* base)
+{
+	conn *c=conn_from_freelist();
+	if(NULL==c)
+	{
+		if(!(c=(conn*)calloc(1,sizeof(conn))))
+		{
+			fprintf(stderr,"calloc()\n");
+			return;
+		}
+	}
+	c->sfd = sfd;
+
+	event_set(&(c->event),sfd,EV_READ|EV_PERSIST,event_handler,(void*)c);
+	event_base_set(base,&c->event);
+
+	if(event_add(&c->event,0)==-1)
+	{
+		if( conn_add_to_freelist(c))
+			conn_free(c);
+		perror("event_add");
+		return;
+	}
+}
+
 void thread_libevent_process(int fd,short which,void *arg)					//处理函数，即当主线程通知workerThread时，主线程会插入一个item到某个thread的queue中，queue是一个工具类
 																				//workerThread将item pop出来并封装为conn，封装期间就建立了和item所指向的对象的联系，也使用libevent完成
 {
