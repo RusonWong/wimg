@@ -84,6 +84,7 @@ void read_cb(struct bufferevent *bev, void *arg)
     evutil_socket_t fd = bufferevent_getfd(bev);
 
     while (n = bufferevent_read(bev, line, MAX_LINE), n > 0) {
+        printf("got size:%d\n",n);
         line[n] = '\0';
         printf("fd=%u, read line: %s\n", fd, line);
 

@@ -3,7 +3,6 @@
 #include "EventQueue.h"
 #include <event.h>
 
-
 struct LIBEVENT_THREAD
 {
 	pthread_t thread_id;

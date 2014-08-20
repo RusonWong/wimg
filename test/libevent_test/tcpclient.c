@@ -45,8 +45,8 @@ void test()
     //sLen = send(cClient, imgId,     
     int count = 1;
     while(count){  
-	    char* buff = "hello, are you server.fufufuff";
-	    cLen = send(cClient, buff, 20,0);
+	    char* buff = "hello";
+	    cLen = send(cClient, buff, 5,0);
 	    if((cLen < 0)||(cLen == 0))
 	    {
 		  printf("send() failure!\n");

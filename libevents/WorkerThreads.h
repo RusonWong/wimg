@@ -22,7 +22,6 @@ class WorkerThreads
 private:
 	int nthreads;
 
-
 public:
 	LIBEVENT_THREAD* threads;
 	WorkerThreads(int threadCount=1):nthreads(threadCount),threads(NULL)

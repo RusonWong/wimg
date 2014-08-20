@@ -1,5 +1,8 @@
-#include"WorkerThreads.h"
-#include<stdio.h>
+#include "WorkerThreads.h"
+#include "EntityManager.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 
 /*
 	WorkerThreads::WorkerThreads(int threadCount=1):nthreads(threadCount),threads(NULL)

@@ -11,6 +11,7 @@
 #include <assert.h>
 
 #include"WorkerThreads.h"
+#include "EntityManager.h"
 
 
 #define LISTEN_PORT 9999
@@ -33,7 +34,7 @@ WorkerThreads *workerThreads;
 //Globally Functions
 void readCommand(Settings settings){}
 
-void thread_init(int nthreads)					//void thread_init(int nthreads,struct event_base *main_base)
+void thread_init(int nthreads)
 {	
 	workerThreads=new WorkerThreads(nthreads);
 
@@ -43,22 +44,16 @@ void thread_init(int nthreads)					//void thread_init(int nthreads,struct event_
 void dispatch_conn_new(int sfd)
 {
 	printf("dispatch_conn_new called\n");	
-	EQ_ITEM *item=eqi_new();
-	printf("dispatch_conn_new called end 3\n");							
-	int tid=(last_thread+1)%settings.num_threads;			//轮询选出workerThread（数组）
-	printf("dispatch_conn_new called end 2\n");
+	EQ_ITEM *item=eqi_new();						
+	int tid=(last_thread+1)%settings.num_threads;
 	LIBEVENT_THREAD *thread=workerThreads->threads+tid;
 	
 	last_thread=tid;
-    printf("dispatch_conn_new called end 1\n");
-	item->sfd=sfd;											//封装必要的信息到item结构，后面会利用item封装为conn
+	item->sfd=sfd;											//connected fd
 	item->event_flags=EV_READ | EV_PERSIST;
 	
-	eq_push(thread->new_conn_queue,item);					//item需要插入到被选中的thread的全局queue里面
-	
-	printf("item fd is:%d\n",item->sfd);
-	int wc=write(thread->notify_send_fd," ",1);				//主线程和workerThread的通信方式，写入到notify_send_fd告诉辅助线程item准备好了，可以处理
-	printf("dispatch_conn_new called end\n");	
+	eq_push(thread->new_conn_queue,item);					//push conn to working thread
+	int wc=write(thread->notify_send_fd," ",1);				//write 1 byte to notify thread
 }
 
 void base_event_handler(const int fd, const short which,void* arg)
@@ -69,10 +64,13 @@ void base_event_handler(const int fd, const short which,void* arg)
 	//printf("%d\n",rc);
 	//buf[rc]='\0';
 	//printf("%s\n",buf);
+	printf("listen fd is:%d\n",fd);
 	struct sockaddr_in sin;
     socklen_t slen = sizeof(struct sockaddr);
     int sfd = accept(fd, (struct sockaddr *)&sin, &slen);
     printf("accept fd is %d\n", sfd);
+
+
 	//int testfd=open("./testfile.txt",O_RDWR);
 	//int pipefds[2];
 	//pipe(pipefds);
@@ -122,7 +120,7 @@ int main(int argc, char **argv)
 	
 	main_base=event_init();						//主线程的监听外部连接（这里监听标准输入），memcached则借助自定义的协议，接收来自Unix域/tcp/udp的客户端请求。
 	struct event inputEvent;
-	event_set(&inputEvent,listener,EV_READ | EV_PERSIST,base_event_handler,NULL);	//一旦有事件触发，则委托给base_event_handler处理
+	event_set(&inputEvent,listener,EV_READ|EV_PERSIST,base_event_handler,NULL);	//一旦有事件触发，则委托给base_event_handler处理
 	event_base_set(main_base,&inputEvent);
 	event_add(&inputEvent,0);
 	
