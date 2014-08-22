@@ -5,33 +5,84 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "FTProtocol.h"
 #include "LocalStorage.h"
 
-int on_request_arrive(const int fd)
+int on_request_get(const int fd)
 {
-	char buff[128];
-	memset(buff,0,sizeof(buff));
-	int rc = read(fd, buff, 128);
+	char *buff;
+	int rc = w_recv(fd, buff);
 	
 	if (rc == 0)
 	{
 		return 0;
 	}
-	LocalStorage localStorage;
+	LocalStorage* plocalStorage = LocalStorage::getInstance();
 	std::string fileName(buff);
 
-	//int get_file(std::string key, char* &buffptr,size_t& len);
 	char* buffptr;
 	size_t len;
-	if(localStorage.get_file(fileName, buffptr, len) == 0)
+	if(plocalStorage->get_file(fileName, buffptr, len) == 0)
 	{
 		printf("can not find file %s\n", buff);
 		return 0;
 	}
 	printf("find file %s, len %d\n",buff,len);
-	int wc = write(fd, buffptr, len);
-	return 1;
+	int wc = w_send(fd, buffptr, len);
+	free(buffptr);
+}
+
+//int LocalStorage::save_file(const char* buff, size_t file_size, std::string file_name)
+//handle upload a image document request
+int on_request_set(const int fd)
+{	
+	LocalStorage* plocalStorage = LocalStorage::getInstance();
+	//get file type
+	char* fileName;
+	int rc = w_recv(fd, fileName);
+	if (rc == -1)
+	{
+		printf("connection error");
+		return -1;
+	}
+
+	char* content;
+	rc = w_recv(fd, content);
+
+	std::string filePath(fileName);
+	plocalStorage->save_file(content, rc,filePath);
+
+	int wc = w_send(fd, "done", 4);
+	return 0;
+}
+
+
+
+int on_request_arrive(const int fd)
+{
+	//GET METHOD
+	char* method;
+	int rmc = w_recv(fd,method);
+	printf("get mehtod length:%d\n",rmc);
+	if (rmc == 0)
+	{
+		return 0;
+	}
+
+	if(method[0] == METHOD_GET)
+	{
+		printf("method: get \n");
+		return on_request_get(fd);
+	}
+	else if(method[0] == METHOD_SET)
+	{
+		printf("method: set \n");
+		return on_request_set(fd);
+	}
+	printf("method: not known \n");
+
+	delete method;
+	return 0;
 }
 
 //real handler

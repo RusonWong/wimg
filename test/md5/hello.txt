@@ -1,0 +1,142 @@
+
+登录 | 注册
+Dreamcode ~ 设计源于生活从设计的角度学习技术
+目录视图摘要视图订阅
+7月推荐文章       【限时活动】建专辑得大奖       社区问答第九期：老罗的Android之旅       有奖试读&征文--当青春遇上互联网，能否点燃你的创业梦       关注社区微信得下载分
+ ubuntu下openssl找不到的问题
+分类： 操作系统(PC 类) Linux 2009-02-12 16:23 5807人阅读 评论(0) 收藏 举报
+ubuntu
+检查是否已安装openssl：
+
+sudo apt-get install openssl
+
+ 
+
+如果已安装执行以下操作：
+sudo apt-get install libssl-dev
+sudo apt-get install libssl0.9.8
+
+上一篇不当房奴不做炒房客 贫寒北漂女孩买房经历
+下一篇Linux/Unix环境下的Make和Makefile详解
+主题推荐ubuntuopensslapt
+猜你在找
+Flash 跨域访问安全策略（转）用lua扩展你的Nginx（整理）查看lib内容工具LibDump 1.0利用LDIFDE，CSVDE 批量导出用户！基于NDK的Android C/C++开发Crawljax性能问题之我见NDK JNI使用方法说明从源代码安装spice客户端Eclipse CDT中makefile文件编译路径（-I参数）漫话中文自动分词和语义识别（下）：句法结构和语义结构
+查看评论
+
+  暂无评论
+
+您还没有登录,请[登录]或[注册]
+* 以上用户言论只代表其个人观点，不代表CSDN网站的观点或立场
+核心技术类目
+全部主题 Hadoop AWS 移动游戏 Java Android iOS Swift 智能硬件 Docker OpenStack VPN Spark ERP IE10 Eclipse CRM JavaScript 数据库 Ubuntu NFC WAP jQuery BI HTML5 Spring Apache .NET API HTML SDK IIS Fedora XML LBS Unity Splashtop UML components Windows Mobile Rails QEMU KDE Cassandra CloudStack FTC coremail OPhone CouchBase 云计算 iOS6 Rackspace Web App SpringSide Maemo Compuware 大数据 aptech Perl Tornado Ruby Hibernate ThinkPHP HBase Pure Solr Angular Cloud Foundry Redis Scala Django Bootstrap
+个人资料
+ 访问我的空间 
+Dreamcode
+ 
+
+访问：384158次
+积分：5220分
+排名：第1371名
+原创：81篇转载：185篇译文：1篇评论：353条
+文章搜索
+
+博客专栏
+	移动设备管理与OMA DM 协议
+文章：5篇
+阅读：13148
+文章分类
+TR069(4)
+VOIP(2)
+FreeSWITCH(7)
+OMA(8)
+LTE(3)
+Linux(38)
+SDN(1)
+Shell(1)
+用户体验(1)
+HTTP(3)
+软件工程(9)
+程序设计(50)
+组件技术(6)
+软件之外(17)
+电子商务(7)
+网络专题(26)
+产品设计(2)
+外语总结(2)
+酷壳转载(1)
+开源软件(1)
+操作系统(PC 类)(18)
+操作系统(Mobile 类)(3)
+操作系统(嵌入式类)(0)
+数字家庭专题(1)
+数字签名(2)
+数据库技术(5)
+杂七杂八(0)
+架构设计(17)
+程序人生(24)
+程序员杂谈(6)
+Struts2(3)
+文章存档
+2014年08月(2)
+2014年07月(2)
+2014年06月(6)
+2014年05月(4)
+2014年04月(2)
+展开
+阅读排行
+TR069协议向导——一个帮助你了解TR069协议的简明教程（一）(28329)
+VirtualBox桥接网络的简单配置，让虚拟机直接访问网络(12790)
+晒晒C++：虚函数的真相（VC编译器如何实现“virtual ”规则）(11304)
+TR069协议向导—— 一个帮助你了解TR069协议的简明教程（二）(10811)
+“无剑胜有剑”软件大师之路的一点探索（一）(7270)
+ubuntu下openssl找不到的问题(5800)
+忘却的纪念：我的摩托罗拉3G网络工程师培训笔记(5705)
+C 符号列表(4780)
+毕胜演讲：电子商务是个骗局(4702)
+大量并发的应急处理方案与实践2——使用缓存(4621)
+评论排行
+“无剑胜有剑”软件大师之路的一点探索（一）(95)
+晒晒C++：虚函数的真相（VC编译器如何实现“virtual ”规则）(43)
+大量并发的应急处理方案与实践2——使用缓存(22)
+网站架构相关PPT、文章整理（更新于2009-7-15）(16)
+自己动手做QQ（毕业设计）—p2p聊天工具(IM)源代码(11)
+TR069协议向导—— 一个帮助你了解TR069协议的简明教程（二）(10)
+开餐馆与做软件——如何提高大型网站性能(10)
+初探移动设备管理——OMA DM协议向导(9)
+忘却的纪念：我的摩托罗拉3G网络工程师培训笔记(9)
+大量并发的应急处理方案与实践1——异步处理(8)
+最新评论
+MySQL建表规范与常见问题
+Pottieva: 纠正一下。VARCHAR(255)是存储255个字符。不是汉字。
+架构与反射——Struts2开发过程与处理流程解析
+jsrush: 脉络精准，分析透彻。大赞！
+VLine2.0——仿阿里巴巴VIPABC真人视频在线教育（基于Flash支持一对多多对多Web在线视频）
+jsrush: @Dreamcode:这个项目应该有使用流媒体技术吧。最近我在看“基于Flash的流媒体服务的一款基...
+Java代码在Window或Linux系统下使用通用分割符来分割路径
+jsrush: @Dreamcode:晓得了.暗藏玄机其他开源框架的源码也都调用System.getProperty...
+VLine2.0——仿阿里巴巴VIPABC真人视频在线教育（基于Flash支持一对多多对多Web在线视频）
+Dreamcode: @xiangtaoxiangtao:？
+Java代码在Window或Linux系统下使用通用分割符来分割路径
+Dreamcode: @xiangtaoxiangtao:该方法为通用方法，适用于Windows和Linux系统
+FreeSwitch的录音功能
+s100200275: 你好，我有这样一个问题：a和b通话，这样应该是建立两条通道，一个是a到b的一个是b到a的，那么在您这...
+VLine2.0——仿阿里巴巴VIPABC真人视频在线教育（基于Flash支持一对多多对多Web在线视频）
+jsrush: red5?
+Java代码在Window或Linux系统下使用通用分割符来分割路径
+jsrush: String[] tmp = test.split(File.separatorChar);char...
+“无剑胜有剑”软件大师之路的一点探索（一）
+jsrush: 这么金典的思想探究，时隔数载，依旧光鲜夺目。转走了
+我的链接
+Random technical
+Joel on Software
+BlueDavy 之技术Blog
+酷壳
+TechKing
+公司简介|招贤纳士|广告服务|银行汇款帐号|联系方式|版权声明|法律顾问|问题报告|合作伙伴|论坛反馈
+网站客服 杂志客服 微博客服 webmaster@csdn.net 400-600-2320
+京 ICP 证 070598 号
+北京创新乐知信息技术有限公司 版权所有
+江苏乐知网络技术有限公司 提供商务支持
+Copyright © 1999-2014, CSDN.NET, All Rights Reserved GongshangLogo
+  
+更多相关资源：opensslubuntuhash

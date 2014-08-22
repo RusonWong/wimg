@@ -9,7 +9,7 @@
 
 using namespace std;
 
-
+LocalStorage* LocalStorage::instance = NULL;
 LocalStorage::LocalStorage()
 {
 	this->root_path = "./local_files/";
@@ -46,11 +46,6 @@ int LocalStorage::get_file(std::string key, char* &buffptr,size_t& len)
 		long fSize = (long)ifile.tellg();
 		len = (size_t)fSize;
 		cout<<"file lenth is:"<<fSize<<endl;
-/*
-		struct stat _file_stat;
-		stat(key.c_str(), &_file_stat);
-		cout<<_file_stat.st_size<<endl;
-*/
 		buffptr = new char[fSize];
 		ifile.seekg(0,ios::beg);
 		ifile.read(buffptr, fSize);
