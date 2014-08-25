@@ -1,8 +1,8 @@
 #ifndef LOCALSTORAGE_H
 #define LOCALSTORAGE_H
 
-#include<string.h>
-#include<iostream>
+#include <string.h>
+#include <iostream>
 #include "StorageBase.h"
 
 class LocalStorage: public StorageBase

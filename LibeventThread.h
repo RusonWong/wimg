@@ -2,6 +2,8 @@
 #define LIBEVENT_THREAD_T
 #include "EventQueue.h"
 #include <event.h>
+#include "MCConnector.h"
+
 
 struct LIBEVENT_THREAD
 {
@@ -14,6 +16,8 @@ struct LIBEVENT_THREAD
 	int notify_send_fd;
 	
 	event_queue *new_conn_queue;
+
+	MCConnector mcc;
 };
 
 #endif

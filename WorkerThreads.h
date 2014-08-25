@@ -5,7 +5,7 @@
 #include <event.h>
 #include <pthread.h>
 #include "EventHandler.h"
-#include"EventQueue.h"
+#include "EventQueue.h"
 #include <unistd.h>
 #include <string.h>
 

@@ -22,13 +22,13 @@ void eqi_free(EQ_ITEM *item);
 EQ_ITEM  *eqi_new(void);
 
 
-
 ///////////////conn//////////////
 typedef struct conn conn;
 struct conn
 {
 	int sfd;
 	struct event event;
+	void* thread_param;
 };
 
 void conn_init();

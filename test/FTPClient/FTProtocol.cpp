@@ -4,22 +4,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <sys/socket.h>
 
 //send
 int w_send(int fd,const char* content, size_t len)
 {
 	//send len first
-	printf("in w_send \n");
+	//printf("in w_send \n");
 	char cLenBuff[10] = {'\0'};
 
 	char bufftemp[10];
 	int llen = sprintf(bufftemp, "%d", len);
-
-	printf("cclen is %d, bufftemp is %s \n",llen,bufftemp);
-
-	//memcpy(cLenBuff + (10 - llen), bufftemp, llen);
-	printf("buff is \"%s\"",bufftemp);
 
 	int wc = write(fd, bufftemp, 10);
 	if(wc <= 0)
@@ -28,11 +23,23 @@ int w_send(int fd,const char* content, size_t len)
 	}
 
 	//send content
-	wc = write(fd,content,len);
-	if(wc <= 0)
+
+	/*
+	int size_sent = 0;
+	while(size_sent != len)
 	{
-		return 0;
+		wc = write(fd,content + size_sent,len - size_sent);
+		if(wc == 0)
+		{
+			printf("ERRPR::connection error!\n");
+			return 0;
+		}
+		size_sent += wc;
 	}
+	*/
+
+	wc = send(fd, content, len, MSG_WAITALL);
+	printf("actual sent size %d\n", wc);
 }
 
 //recv
@@ -50,13 +57,23 @@ int w_recv(const int fd, char* &content)
 	printf("content len will be:%d\n", content_len);
 
 	content = new char[content_len];
-	rc = read(fd, content, content_len);
-	if(rc ==0)
+	
+/*
+	int size_got = 0;
+	while(size_got != content_len)
 	{
-		printf("error when read content size\n");
-		return 0;
+		rc = read(fd, content + size_got, content_len - size_got);
+		if(rc == 0)
+		{
+			printf("ERRPR::connection error!\n");
+			return 0;
+		}
+		size_got += rc;
 	}
-	return 1;
+*/
+	rc = recv(fd, content, content_len, MSG_WAITALL);
+	printf("actual got total: %d\n",rc);
+	return rc;
 }
 
 

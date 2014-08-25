@@ -4,16 +4,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-
-/*
-	WorkerThreads::WorkerThreads(int threadCount=1):nthreads(threadCount),threads(NULL)
-	{
-		init_count=0;
-		pthread_mutex_init(&init_lock,NULL);
-		pthread_cond_init(&init_cond,NULL);
-	}
-*/
-
 void WorkerThreads::initiate()
 {
 	int i;
@@ -57,8 +47,11 @@ void WorkerThreads::initiate()
 
 void WorkerThreads::setup_event_thread(LIBEVENT_THREAD *me)
 {
+	//printf("workthreads setup_event_thread called\\n");
 	me->base=event_init();//every thread has its own event_base
-		
+	//initial memcached connector
+	me->mcc.init();
+
 	if(!me->base)
 	{
 		fprintf(stderr,"can't allocate event base\n");
@@ -75,8 +68,7 @@ void WorkerThreads::setup_event_thread(LIBEVENT_THREAD *me)
 		exit(1);
 	}
 
-	//why initiate conn_queue here?
-	me->new_conn_queue=(event_queue*)malloc(sizeof(struct event_queue));		//ÄÚ²¿µÄconn_queue
+	me->new_conn_queue=(event_queue*)malloc(sizeof(struct event_queue));		
 	if(me->new_conn_queue==NULL)
 	{
 		perror("Failed to allocate memory for connection queue");
@@ -87,7 +79,7 @@ void WorkerThreads::setup_event_thread(LIBEVENT_THREAD *me)
 }
 
 //handle socket event
-void handle_connection(const int sfd, struct event_base* base)
+void handle_connection(const int sfd, struct LIBEVENT_THREAD* me)
 {
 	conn *c=conn_from_freelist();
 	if(NULL==c)
@@ -99,9 +91,10 @@ void handle_connection(const int sfd, struct event_base* base)
 		}
 	}
 	c->sfd = sfd;
+	c->thread_param = me;
 
 	event_set(&(c->event),sfd,EV_READ|EV_PERSIST,event_handler,(void*)c);
-	event_base_set(base,&c->event);
+	event_base_set(me->base,&c->event);
 
 	if(event_add(&c->event,0)==-1)
 	{
@@ -128,7 +121,7 @@ void thread_libevent_process(int fd,short which,void *arg)					//´¦Àíº¯Êý£¬¼´µ±Ö
 	printf("item fd is:%d\n",item->sfd);
 	if(NULL != item)
 	{
-		handle_connection(item->sfd, me->base);
+		handle_connection(item->sfd, me);
 		eqi_free(item);
 	}
 }
