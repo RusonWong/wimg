@@ -77,6 +77,18 @@ int w_recv(const int fd, char* &content)
 }
 
 
+int w_send_pb(int fd, PB_MESSSAGE* obj)
+{
+	size_t pb_len = obj->ByteSize();
+	printf("in send_pb, pb len is:%d\n", pb_len);
+	char* buff = new char[pb_len];
+	obj->SerializeToArray(buff, pb_len);
+	int ret = w_send(fd, buff, pb_len);
+	delete buff;
+
+	return ret;
+}
+
 void say_hello()
 {
 	printf("say hello");

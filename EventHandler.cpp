@@ -8,8 +8,11 @@
 #include "FTProtocol.h"
 #include "LocalStorage.h"
 #include "LibeventThread.h"
-//#include "MCConnector.h"
 
+#define USING_PROTOBUFF 1
+
+//without protobuf
+#ifndef USING_PROTOBUFF
 int on_request_get(const int fd, conn* c)
 {
 	char *buff;
@@ -54,11 +57,6 @@ int on_request_get(const int fd, conn* c)
 	return 1;
 }
 
-/*
-    int cache_get(char* key, size_t key_len, char* &value, size_t &value_len);
-    int cache_set(char* key, size_t key_len, char* value, size_t value_len);
-*/
-
 //int LocalStorage::save_file(const char* buff, size_t file_size, std::string file_name)
 //handle upload a image document request
 int on_request_set(const int fd, conn* c)
@@ -84,6 +82,109 @@ int on_request_set(const int fd, conn* c)
 	plocalStorage->save_file(content, rc,filePath);
 	return 0;
 }
+#endif
+
+//with protobuff version
+#ifdef USING_PROTOBUFF
+#include "WPB.pb.h"
+
+int on_request_get(const int fd, conn* c)
+{
+	//get request
+	char *reqContent;
+	int rc = w_recv(fd, reqContent);
+	
+	ReqGet req;
+	ReqResponse response;
+	if (rc == 0)
+	{
+		return 0;
+	}
+	if(!req.ParseFromArray(reqContent, rc))
+	{
+		printf("error when parse get req\n");
+		response.set_rspcode(REQ_FAILED);
+		response.set_errcode(ERR_INVALID_PARAMS);
+		w_send_pb(fd, &response);
+		return 0;
+	}
+
+	size_t imageid_len = req.imageid().length();
+	char* buff = (char*)req.imageid().c_str();
+
+	char* buffptr = NULL;
+	size_t len = 0;
+	
+	int cache_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get(buff, imageid_len, buffptr, len);
+	if(cache_rt == 0){
+		LocalStorage* plocalStorage = LocalStorage::getInstance();
+		std::string fileName(buff);
+
+		if(plocalStorage->get_file(fileName, buffptr, len) == 0)
+		{
+			printf("can not find file %s\n", buff);
+			response.set_rspcode(REQ_FAILED);
+			response.set_errcode(ERR_FILE_NOT_FOUND);
+			w_send_pb(fd, &response);
+			return 0;
+		}
+
+		//set cache
+		int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, rc, buffptr, len);
+		if(cache_set_rt)
+		{
+			printf("set cache of %s done\n",buff);
+		}
+	}
+	else{
+		printf("hit cache of %s\n", buff);
+	}
+	printf("find file %s, len %d\n",buff,len);
+	response.set_rspcode(REQ_SUCCESS);
+	w_send_pb(fd, &response);
+
+	int wc = w_send(fd, buffptr, len);
+	//clean mem
+	delete buffptr;
+	//delete buff;
+	return 1;
+}
+
+/*
+    int cache_get(char* key, size_t key_len, char* &value, size_t &value_len);
+    int cache_set(char* key, size_t key_len, char* value, size_t value_len);
+*/
+//int LocalStorage::save_file(const char* buff, size_t file_size, std::string file_name)
+//handle upload a image document request
+int on_request_set(const int fd, conn* c)
+{	
+	ReqResponse response;
+	LocalStorage* plocalStorage = LocalStorage::getInstance();
+	//get file type
+	char* fileName;
+	size_t fn_len = w_recv(fd, fileName);
+	if (!fn_len > 0)
+	{
+		printf("connection error");
+		return -1;
+	}
+
+	char* content;
+	size_t rc = w_recv(fd, content);
+
+	//save to cache
+	((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(fileName, fn_len, content, rc);
+	printf("cache of %s set done\n", fileName);
+
+	std::string filePath(fileName);
+	plocalStorage->save_file(content, rc,filePath);
+
+	response.set_rspcode(REQ_SUCCESS);
+	w_send_pb(fd, &response);
+	
+	return 0;
+}
+#endif
 
 int on_request_arrive(const int fd, conn* c)
 {

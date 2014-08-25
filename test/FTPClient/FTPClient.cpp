@@ -17,6 +17,9 @@ using namespace std;
 #define SERVER_ADDR "127.0.0.1"
 #define THREAD_COUNT 1
 
+#define USING_PROTOBUFF 1
+
+
 int get_local_file(std::string key, char* &buffptr,size_t& len)
 {
     string file_path = "./files/" + key;
@@ -72,6 +75,184 @@ int write_local_file(std::string filePath, char* content, size_t len)
     return 1;
 }
 
+
+
+
+#ifdef USING_PROTOBUFF
+//with protobuf version
+#include "WPB.pb.h"
+void retrive_file(string fileName)
+{
+    //say_hello();
+    int cPort = DEFAULT_PORT;
+    int cLen = 0;
+    struct sockaddr_in cli;
+    
+    cli.sin_family = AF_INET;
+    cli.sin_port = htons(cPort);
+    cli.sin_addr.s_addr = inet_addr(SERVER_ADDR);
+    
+    const int cClient = socket(AF_INET, SOCK_STREAM, 0);
+
+    if(cClient < 0)
+    {
+        printf("socket() failure!\n");
+        return; 
+    }
+    
+    if(connect(cClient, (struct sockaddr*)&cli, sizeof(cli)) < 0)
+    {
+        printf("connect() failure!\n");
+        return;
+    }
+
+    //send method
+    cLen = w_send(cClient, "1", 1);
+    if((cLen < 0)||(cLen == 0))
+    {
+        printf("send() failure!\n");
+        return;
+    }
+    
+    ReqGet req;
+    req.set_imageid(fileName);
+    req.set_width(100);
+    req.set_height(200);
+    size_t reqbuffsize = req.ByteSize();
+    char* reqbuff = new char[reqbuffsize];
+    req.SerializeToArray(reqbuff, reqbuffsize);
+
+    cLen = w_send(cClient, reqbuff, reqbuffsize);
+    
+    if((cLen < 0)||(cLen == 0))
+    {
+        printf("send() failure!\n");
+        return;
+    }
+
+    char* cbuf;
+    int rc = w_recv(cClient, cbuf);
+    
+    if(rc == 0)
+    {
+        printf("connection error, got size 0\n");
+        return;
+    }
+    
+    ReqResponse response;
+    response.ParseFromArray(cbuf, rc);
+    if(response.rspcode() == REQ_FAILED)
+    {
+        printf("ERROR GET IMAGE\n");
+        return;
+    }
+    delete cbuf;
+
+    char* content_buf;
+    int content_len = w_recv(cClient, content_buf);
+    
+    if(rc == 0)
+    {
+        printf("connection error when recv img content\n");
+        return;
+    }
+
+    string filePath = "./files/" + fileName;
+    write_local_file(filePath, content_buf, content_len);
+    
+    delete content_buf;
+
+    close(cClient);
+    printf("done\n");
+}
+
+void do_send_file(string fileName)
+{
+    int cPort = DEFAULT_PORT;
+    int cClient = 0;
+    int cLen = 0;
+    struct sockaddr_in cli;
+    
+    cli.sin_family = AF_INET;
+    cli.sin_port = htons(cPort);
+    cli.sin_addr.s_addr = inet_addr(SERVER_ADDR);
+    
+    cClient = socket(AF_INET, SOCK_STREAM, 0);
+
+
+    //get file content
+    char* fileContent;
+    size_t fileLen;
+    if(!get_local_file(fileName, fileContent, fileLen))
+    {
+        printf("error open file\n");
+        return;
+    }
+
+    if(cClient < 0)
+    {
+        printf("socket() failure!\n");
+        return; 
+    }
+    
+    if(connect(cClient, (struct sockaddr*)&cli, sizeof(cli)) < 0)
+    {
+        printf("connect() failure!\n");
+        return;
+    }
+    //send method
+    cLen = w_send(cClient, "2", 1);
+    if((cLen < 0)||(cLen == 0))
+    {
+        printf("send() failure!\n");
+        return;
+    }
+
+    //send filename
+    cLen = w_send(cClient, fileName.c_str(), strlen(fileName.c_str()));
+    if((cLen < 0)||(cLen == 0))
+    {
+        printf("send() failure!\n");
+        return;
+    }
+
+
+    cLen = w_send(cClient, fileContent, fileLen);
+    delete fileContent;
+    
+    if((cLen < 0)||(cLen == 0))
+    {
+        printf("send() failure!\n");
+        return;
+    }
+
+    char* rbuff;
+    int rc = w_recv(cClient, rbuff);
+    
+    if(rc == 0)
+    {
+        printf("connection error, got size 0\n");
+        return;
+    }
+    
+    ReqResponse response;
+    response.ParseFromArray(rbuff, rc);
+    if(response.rspcode() == REQ_FAILED)
+    {
+        printf("ERROR GET IMAGE\n");
+        return;
+    }
+    delete rbuff;
+
+    close(cClient);
+    printf("done\n");
+}
+#endif
+
+
+
+#ifndef USING_PROTOBUFF
+/*
 void retrive_file(string fileName)
 {
 
@@ -132,11 +313,7 @@ void retrive_file(string fileName)
 
     close(cClient);
     printf("done\n");
-}
-
-
-
-
+}*/
 
 void do_send_file(string fileName)
 {
@@ -214,6 +391,7 @@ void do_send_file(string fileName)
     close(cClient);
     printf("done\n");
 }
+#endif
 
 int main(int argc, char** argv)
 {

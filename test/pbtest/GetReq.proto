@@ -1,0 +1,5 @@
+message GetReqMessage{
+	required string imgID = 1;
+	required int32 width = 2;
+	required int32 height = 3;
+}
