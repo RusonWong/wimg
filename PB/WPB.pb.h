@@ -353,20 +353,35 @@ class ReqResponse : public ::google::protobuf::Message {
   inline ::ErrCode errcode() const;
   inline void set_errcode(::ErrCode value);
 
+  // optional string newname = 3;
+  inline bool has_newname() const;
+  inline void clear_newname();
+  static const int kNewnameFieldNumber = 3;
+  inline const ::std::string& newname() const;
+  inline void set_newname(const ::std::string& value);
+  inline void set_newname(const char* value);
+  inline void set_newname(const char* value, size_t size);
+  inline ::std::string* mutable_newname();
+  inline ::std::string* release_newname();
+  inline void set_allocated_newname(::std::string* newname);
+
   // @@protoc_insertion_point(class_scope:ReqResponse)
  private:
   inline void set_has_rspcode();
   inline void clear_has_rspcode();
   inline void set_has_errcode();
   inline void clear_has_errcode();
+  inline void set_has_newname();
+  inline void clear_has_newname();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   int rspcode_;
   int errcode_;
+  ::std::string* newname_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
   friend void  protobuf_AddDesc_WPB_2eproto();
   friend void protobuf_AssignDesc_WPB_2eproto();
@@ -688,6 +703,76 @@ inline void ReqResponse::set_errcode(::ErrCode value) {
   assert(::ErrCode_IsValid(value));
   set_has_errcode();
   errcode_ = value;
+}
+
+// optional string newname = 3;
+inline bool ReqResponse::has_newname() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ReqResponse::set_has_newname() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ReqResponse::clear_has_newname() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ReqResponse::clear_newname() {
+  if (newname_ != &::google::protobuf::internal::kEmptyString) {
+    newname_->clear();
+  }
+  clear_has_newname();
+}
+inline const ::std::string& ReqResponse::newname() const {
+  return *newname_;
+}
+inline void ReqResponse::set_newname(const ::std::string& value) {
+  set_has_newname();
+  if (newname_ == &::google::protobuf::internal::kEmptyString) {
+    newname_ = new ::std::string;
+  }
+  newname_->assign(value);
+}
+inline void ReqResponse::set_newname(const char* value) {
+  set_has_newname();
+  if (newname_ == &::google::protobuf::internal::kEmptyString) {
+    newname_ = new ::std::string;
+  }
+  newname_->assign(value);
+}
+inline void ReqResponse::set_newname(const char* value, size_t size) {
+  set_has_newname();
+  if (newname_ == &::google::protobuf::internal::kEmptyString) {
+    newname_ = new ::std::string;
+  }
+  newname_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* ReqResponse::mutable_newname() {
+  set_has_newname();
+  if (newname_ == &::google::protobuf::internal::kEmptyString) {
+    newname_ = new ::std::string;
+  }
+  return newname_;
+}
+inline ::std::string* ReqResponse::release_newname() {
+  clear_has_newname();
+  if (newname_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = newname_;
+    newname_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void ReqResponse::set_allocated_newname(::std::string* newname) {
+  if (newname_ != &::google::protobuf::internal::kEmptyString) {
+    delete newname_;
+  }
+  if (newname) {
+    set_has_newname();
+    newname_ = newname;
+  } else {
+    clear_has_newname();
+    newname_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
 }
 
 

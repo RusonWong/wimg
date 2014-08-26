@@ -81,7 +81,7 @@ int write_local_file(std::string filePath, char* content, size_t len)
 #ifdef USING_PROTOBUFF
 //with protobuf version
 #include "WPB.pb.h"
-void retrive_file(string fileName)
+void retrive_file(string fileName, int width, int height)
 {
     //say_hello();
     int cPort = DEFAULT_PORT;
@@ -116,8 +116,8 @@ void retrive_file(string fileName)
     
     ReqGet req;
     req.set_imageid(fileName);
-    req.set_width(100);
-    req.set_height(200);
+    req.set_width(width);
+    req.set_height(height);
     size_t reqbuffsize = req.ByteSize();
     char* reqbuff = new char[reqbuffsize];
     req.SerializeToArray(reqbuff, reqbuffsize);
@@ -157,7 +157,7 @@ void retrive_file(string fileName)
         return;
     }
 
-    string filePath = "./files/" + fileName;
+    string filePath = "./files/" + fileName + "_download.jpg";
     write_local_file(filePath, content_buf, content_len);
     
     delete content_buf;
@@ -241,6 +241,11 @@ void do_send_file(string fileName)
     {
         printf("ERROR GET IMAGE\n");
         return;
+    }
+    else
+    {
+        string new_name = response.newname();
+        cout<<"new name is "<<new_name<<endl;
     }
     delete rbuff;
 
@@ -404,7 +409,9 @@ int main(int argc, char** argv)
             do_send_file(fileName);
         else if(method == "get")
         {
-            retrive_file(fileName);
+            int width, height;
+            cin>>width>>height;
+            retrive_file(fileName,width,height);
         }
         cout<<"commond:";
     }

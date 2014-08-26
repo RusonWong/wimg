@@ -26,4 +26,6 @@ enum ErrCode
 message ReqResponse{
 	required RspCode rspCode = 1;
 	optional ErrCode errCode = 2;
+
+	optional string newname = 3;
 }
