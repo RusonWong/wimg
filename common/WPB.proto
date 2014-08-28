@@ -1,0 +1,37 @@
+message ReqGet
+{
+	required string imageID = 1;
+	required int32	width = 2;
+	required int32 height = 3;
+}
+
+message ReqSet
+{
+	optional string imageName = 1;
+	required string md5 = 2;
+}
+
+message NodeInfo
+{
+	required string nodeAddr = 1;
+	required int32 nodePort = 2;
+}
+
+enum RspCode
+{
+	REQ_FAILED = 0;
+	REQ_SUCCESS = 1;
+}
+
+enum ErrCode
+{
+	ERR_FILE_NOT_FOUND = 0;
+	ERR_INVALID_PARAMS = 1;
+}
+
+message ReqResponse{
+	required RspCode rspCode = 1;
+	optional ErrCode errCode = 2;
+
+	optional string newname = 3;
+}
