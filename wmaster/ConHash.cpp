@@ -1,5 +1,5 @@
 #include "ConHash.h"
-
+#include "md5.h"
 
 
 //add virtual node
@@ -7,14 +7,14 @@ void ConHash::addVirtualNode(CVirtualNode* vNode)
 {
 	//calculate hash value
 	int value = hash(vNode->getKey());
-	vNode.setHashValue(value);
+	vNode->setHashValue(value);
 
 	//insert into  vNodeList
 	int count = vNodeList.size();
 	int pos = 0;
 	for(; pos < count; pos++)
 	{
-		CVirtualNode n = vNodeList[pos];
+		CVirtualNode* n = vNodeList[pos];
 		if(n->getHashValue() > value)
 			break;
 	}
@@ -22,23 +22,28 @@ void ConHash::addVirtualNode(CVirtualNode* vNode)
 	vNodeList.insert(vNodeList.begin() + pos, vNode);
 
 	//this->vNodeList.push_back(vNode);
+	for(int i = 0; i < vNodeList.size(); i++)
+	{
+		cout<<"["<<vNodeList[i]->getHashValue()<<"] ";
+	}
+	cout<<endl;
 }
 
 
 //add value set
-int ConHash::addNode(CNode* node, int  vNodeCount = -1)
+int ConHash::addNode(CNode* node, int  vNodeCount)
 {
 	//create virtual nodes and add them to CNode and VNodeList 
-	string nodeKey = node.getKey();
+	string nodeKey = node->getKey();
 	for(int i = 0; i < vNodeCount; i++)
 	{
 		CVirtualNode* vNode = new CVirtualNode();
 
 		//set new key
-		string new_key = nodeKey + "#" + itoa(i);
-		vNode.setKey(new_key);
+		string new_key = nodeKey + "#" + (char)(48 + i);
+		vNode->setKey(new_key);
 
-		vNode.setActualNode(node);
+		vNode->setActualNode(node);
 		//add vnode to node
 		node->addVirtualNode((void*)vNode);
 		//add to vNodeList
@@ -89,5 +94,16 @@ CNode* ConHash::hash2Node(string key)
 
 int ConHash::hash(string key)
 {
-	return (int)key[0];
+	key = MD5(key).toString();
+	cout<<"md5 key:" << key<<endl;
+
+	//return (int)key[0];
+	int ret = 0;
+
+	for(int i = 0; i < 5; i++)
+	{
+		cout<<"char:"<<key[i]<<",int:"<<(int)key[i]<<endl;
+		ret += ret *10 + (int)key[i];
+	}
+	return ret;
 }

@@ -76,6 +76,7 @@ private:
 	vector<CVirtualNode*> vNodeList;
 	void addVirtualNode(CVirtualNode* vNode);
 
+	int hash(string key);
 public:
 	ConsistentHash(){};
 	~ConsistentHash();

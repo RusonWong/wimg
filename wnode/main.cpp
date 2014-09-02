@@ -2,14 +2,17 @@
 #include "FTProtocol.h"
 #include "WPB.pb.h"
 #include <string>
-
-
-#define MASTER_ADDR "127.0.0.1"
-#define MASTER_PORT 8888
-
+#include "Config.h"
 
 using namespace std;
 
+extern Config globalConfig;
+
+void init()
+{
+    globalConfig.load("./conf/conf.lua");
+    cout<<globalConfig.localAddr<<"="<<globalConfig.port<<"="<<globalConfig.masterAddr<<"="<<globalConfig.masterPort<<endl;
+}
 
 int register_to_master()
 {
@@ -26,15 +29,12 @@ int register_to_master()
     char* ipstr = inet_ntoa(*(struct in_addr*)(hent->h_addr_list[0]));
     string hostaddr(ipstr);
     
-    
- 
-
     int cLen = 0;
     struct sockaddr_in cli;
     
     cli.sin_family = AF_INET;
-    cli.sin_port = htons(MASTER_PORT);
-    cli.sin_addr.s_addr = inet_addr(MASTER_ADDR);
+    cli.sin_port = htons(globalConfig.masterPort);
+    cli.sin_addr.s_addr = inet_addr(globalConfig.masterAddr);
     
     const int sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -60,8 +60,8 @@ int register_to_master()
 
     //send body
     NodeInfo req;
-    req.set_nodeaddr(hostaddr);
-    req.set_nodeport(9999);
+    req.set_nodeaddr(globalConfig.localAddr);
+    req.set_nodeport(globalConfig.port);
 
     w_send_pb(sock, &req);
 
@@ -72,7 +72,8 @@ int register_to_master()
 
 int main(int argc, char **argv)
 {
-  register_to_master();
-	start_server(10);
+    init();
+    register_to_master();
+    start_server(10);
 	
 }

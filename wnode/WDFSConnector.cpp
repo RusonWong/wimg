@@ -1,8 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include "LocalStorage.h"
-using namespace std;
+#include "WDFSConnector.h"
 
+using namespace std;
 
 int WDFSConnector::save_file(const char* buff, size_t file_size, std::string file_name)
 {
