@@ -6,7 +6,7 @@ curcpp = $(wildcard *.cpp)
 curobj = $(curcpp:.cpp=.o)
 
 CC := g++
-CFLAGS	:= -std=gnu++11 `pkg-config --cflags --libs protobuf` `pkg-config --cflags --libs MagickWand` -I../common/
+CFLAGS	:= -std=c++0x `pkg-config --cflags --libs protobuf` `pkg-config --cflags --libs MagickWand` -I../common/
 OBJECTS	:= $(curobj) WPB.pb.o $(commonobj) 
 
 wclient: $(OBJECTS)

@@ -8,7 +8,7 @@ curcpp = $(wildcard *.cpp)
 curobj = $(curcpp:.cpp=.o)
 
 CC := g++
-CFLAGS	:= -levent -pthread -lmemcached -std=gnu++11 `pkg-config --cflags --libs protobuf` `pkg-config --cflags --libs MagickWand` -I../common/ -I../lua/
+CFLAGS	:= -levent -pthread -lmemcached -std=c++0x `pkg-config --cflags --libs protobuf` `pkg-config --cflags --libs MagickWand` -I../common/ -I../lua/
 OBJECTS	:= $(curobj) WPB.pb.o $(luaobj) $(commonobj) 
 
 wmaster: $(OBJECTS)
