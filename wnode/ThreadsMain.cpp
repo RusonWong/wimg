@@ -7,13 +7,12 @@
 #include <string.h> //strerror
 #include <errno.h>
 #include <fcntl.h> //open
-
 #include <assert.h>
+#include "Config.h"
 
-
-#define LISTEN_PORT 9999
 #define LISTEN_BACKLOG 32
 
+extern Config globalConfig;
 
 static struct event_base *main_base;
 static int last_thread = -1;
@@ -69,7 +68,7 @@ int start_server(int nThreads)
     struct sockaddr_in sin;
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = 0;
-    sin.sin_port = htons(LISTEN_PORT);
+    sin.sin_port = htons(globalConfig.port);
 
     if (bind(listener, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
         perror("bind");

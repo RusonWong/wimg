@@ -34,7 +34,7 @@ int register_to_master()
     
     cli.sin_family = AF_INET;
     cli.sin_port = htons(globalConfig.masterPort);
-    cli.sin_addr.s_addr = inet_addr(globalConfig.masterAddr);
+    cli.sin_addr.s_addr = inet_addr(globalConfig.masterAddr.c_str());
     
     const int sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -74,6 +74,6 @@ int main(int argc, char **argv)
 {
     init();
     register_to_master();
-    start_server(10);
+    start_server(globalConfig.threadsCount);
 	
 }

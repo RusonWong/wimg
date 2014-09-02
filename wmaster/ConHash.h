@@ -1,3 +1,7 @@
+#ifndef CON_HASH_H
+#define CON_HASH_H
+
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -8,11 +12,20 @@ class CNode
 {
 private:
 	vector<void*> vNodeList;
-
+	string key;
 public:
-	CNode(){};
+	CNode(string _key){
+		key = _key;
+	};
 	~CNode(){};
-	virtual string getKey();
+	string getKey()
+	{
+		return key;
+	}
+	void setKey(string _key)
+	{
+		key = _key;
+	}
 
 	void addVirtualNode(void* vNode)
 	{
@@ -53,7 +66,7 @@ public:
 		return this->pNode;
 	}
 
-	void setActualNode(CNode* node);
+	void setActualNode(CNode* node)
 	{
 		this->pNode = node;
 	}
@@ -75,13 +88,16 @@ class ConHash
 private:
 	vector<CVirtualNode*> vNodeList;
 	void addVirtualNode(CVirtualNode* vNode);
+	int hash(string _key);
 
-	int hash(string key);
 public:
-	ConsistentHash(){};
-	~ConsistentHash();
+	ConHash(){};
+	~ConHash(){};
 
 	//add value set
-	int addNode(CNode* node, int  vNodeCount = -1);
+	int addNode(CNode* node, int  vNodeCount = 3);
 	CNode* hash2Node(string key);
 };
+
+
+#endif

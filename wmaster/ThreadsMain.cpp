@@ -7,11 +7,12 @@
 #include <string.h> //strerror
 #include <errno.h>
 #include <fcntl.h> //open
-
+#include "Config.h"
 #include <assert.h>
 
 
-#define LISTEN_PORT 8888
+extern Config globalConfig;
+
 #define LISTEN_BACKLOG 32
 
 
@@ -69,7 +70,7 @@ int start_server(int nThreads)
     struct sockaddr_in sin;
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = 0;
-    sin.sin_port = htons(LISTEN_PORT);
+    sin.sin_port = htons(globalConfig.masterPort);
 
     if (bind(listener, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
         perror("bind");
@@ -81,7 +82,7 @@ int start_server(int nThreads)
         return 1;
     }
 
-    printf ("Listening...\n");
+    printf ("Listening on port %d\n", globalConfig.masterPort);
 
     evutil_make_socket_nonblocking(listener);
 	

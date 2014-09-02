@@ -4,21 +4,25 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+#include "Config.h"
+
+extern Config globalConfig;
+
 void WorkerThreads::initiate()
 {
 	int i;
 
-	threads=(LIBEVENT_THREAD*)calloc(nthreads,sizeof(LIBEVENT_THREAD));		//LIBEVENT_THREAD,加入libevent元素的thread结构 “数组”
+	threads=(LIBEVENT_THREAD*)calloc(nthreads,sizeof(LIBEVENT_THREAD));
 	if(!threads)
 	{
 		perror("can't allocate thread des");
 		exit(1);
 	}
 
-	for(i=0;i<nthreads;i++)													//设置thread和thread中的libevent所需属性
+	for(i=0;i<nthreads;i++)												
 	{
 		int fds[2];
-		if(pipe(fds))														//thread和主线程的通信pipe
+		if(pipe(fds))												
 		{
 			perror("can't create notify pipe");
 			exit(1);
@@ -27,12 +31,12 @@ void WorkerThreads::initiate()
 		threads[i].notify_receive_fd=fds[0];
 		threads[i].notify_send_fd=fds[1];
 
-		setup_event_thread(&threads[i]);									//设置thread和thread中的libevent所需属性
+		setup_event_thread(&threads[i]);						
 	}
 
 	for(i=0;i<nthreads;i++)
 	{
-		create_worker(worker_libevent,&threads[i]);							//启动thread
+		create_worker(worker_libevent,&threads[i]);		
 	}
 
 	pthread_mutex_lock(&init_lock);
@@ -50,7 +54,7 @@ void WorkerThreads::setup_event_thread(LIBEVENT_THREAD *me)
 	//printf("workthreads setup_event_thread called\\n");
 	me->base=event_init();//every thread has its own event_base
 	//initial memcached connector
-	me->mcc.init();
+	me->mcc.init(globalConfig.memAddr, globalConfig.memPort);
 
 	if(!me->base)
 	{

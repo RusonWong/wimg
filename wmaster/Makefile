@@ -27,6 +27,7 @@ $(commonobj):%.o:%.cpp
 	g++ -c $< -o $@
 
 clean:
+	rm wmaster *.o
 	cd ../common && rm *.o
 	cd ../lua    && rm *.o
-	rm wmaster *.o
+	

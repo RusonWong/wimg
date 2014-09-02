@@ -16,6 +16,11 @@ public:
 	string	masterAddr;
 	int		masterPort;
 
+	int 	threadsCount;
+
+	string 	memAddr;
+	int		memPort;
+
 public:
 	Config(){}
 	~Config(){}

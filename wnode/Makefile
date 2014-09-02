@@ -12,9 +12,6 @@ CFLAGS	:= -levent -pthread -lmemcached -std=gnu++11 `pkg-config --cflags --libs 
 OBJECTS	:= $(curobj) WPB.pb.o $(luaobj) $(commonobj) 
 
 wnode_server: $(OBJECTS)
-	@echo $(curobj)
-	@echo $(commonobj)
-	@echo $(luaobj)
 	$(CC) $(OBJECTS) -o wnode_server $(CFLAGS)
 
 WPB.pb.o: ../common/WPB.pb.h ../common/WPB.pb.cc
@@ -30,6 +27,7 @@ $(commonobj):%.o:%.cpp
 	g++ -c $< -o $@
 
 clean:
+	rm wnode_server *.o
 	cd ../common && rm *.o
 	cd ../lua    && rm *.o
-	rm wnode_server *.o
+	

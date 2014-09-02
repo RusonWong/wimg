@@ -1,28 +1,29 @@
 #include "MCConnector.h"
 
-#include <string>
+
 #include <iostream>
+#include <string>
 
 using namespace std;
 
-int MCConnector::init()
+int MCConnector::init(string addr, int port)
 {
     memcached_server_st *server;
     memcached_return rc;
 
     memc = memcached_create(NULL);
-    server = memcached_server_list_append(NULL,"localhost",11211,&rc);
+    server = memcached_server_list_append(NULL,addr.c_str(),port,&rc);
     rc=memcached_server_push(memc,server);
     memcached_server_list_free(server);
 
     if(rc == MEMCACHED_SUCCESS)
     {
-        cout<<"connect server ok\n";
+        cout<<"connect memcached server ok\n";
         return 1;
     }
     else
     {
-        cout<<"connect server failed\n";
+        cout<<"connect memcached server failed\n";
         return 0;
     }
 }

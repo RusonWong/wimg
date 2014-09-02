@@ -4,7 +4,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-extern Config globalConfig;
+Config globalConfig;
 
 void Config::load(string configPath)
 {
@@ -26,7 +26,7 @@ void Config::load(string configPath)
        	this->port = (int)lua_tonumber(L, -1);
     lua_pop(L, 1);
 
-    lua_getglobal(L, "local_addr");
+    lua_getglobal(L, "master_addr");
     if(lua_isstring(L, -1))
         this->masterAddr = (string)lua_tostring(L, -1);
     lua_pop(L, 1);
@@ -34,6 +34,21 @@ void Config::load(string configPath)
     lua_getglobal(L, "master_port");
     if(lua_isnumber(L, -1))
        this->masterPort = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "threads_count");
+    if(lua_isnumber(L, -1))
+       this->threadsCount = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "memcached_addr");
+    if(lua_isstring(L, -1))
+        this->memAddr = (string)lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "memcached_port");
+    if(lua_isnumber(L, -1))
+       this->memPort = (int)lua_tonumber(L, -1);
     lua_pop(L, 1);
 
     lua_close(L);

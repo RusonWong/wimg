@@ -22,5 +22,6 @@ $(commonobj):%.o:%.cpp
 	g++ -c $< -o $@
 
 clean:
+	rm wclient *.o
 	cd ../common && rm *.o
-	rm wnode_server *.o
+	
