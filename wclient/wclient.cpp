@@ -195,6 +195,7 @@ void retrive_file(string md5, int width, int height)
     req.SerializeToArray(reqbuff, reqbuffsize);
 
     cLen = w_send(nodeSock, reqbuff, reqbuffsize);
+    delete reqbuff
     
     if((cLen < 0)||(cLen == 0))
     {
