@@ -157,6 +157,13 @@ class ReqGet : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 height() const;
   inline void set_height(::google::protobuf::int32 value);
 
+  // required bool keep_proportion = 4;
+  inline bool has_keep_proportion() const;
+  inline void clear_keep_proportion();
+  static const int kKeepProportionFieldNumber = 4;
+  inline bool keep_proportion() const;
+  inline void set_keep_proportion(bool value);
+
   // @@protoc_insertion_point(class_scope:ReqGet)
  private:
   inline void set_has_imageid();
@@ -165,15 +172,18 @@ class ReqGet : public ::google::protobuf::Message {
   inline void clear_has_width();
   inline void set_has_height();
   inline void clear_has_height();
+  inline void set_has_keep_proportion();
+  inline void clear_has_keep_proportion();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::std::string* imageid_;
   ::google::protobuf::int32 width_;
   ::google::protobuf::int32 height_;
+  bool keep_proportion_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_WPB_2eproto();
   friend void protobuf_AssignDesc_WPB_2eproto();
@@ -607,6 +617,28 @@ inline ::google::protobuf::int32 ReqGet::height() const {
 inline void ReqGet::set_height(::google::protobuf::int32 value) {
   set_has_height();
   height_ = value;
+}
+
+// required bool keep_proportion = 4;
+inline bool ReqGet::has_keep_proportion() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ReqGet::set_has_keep_proportion() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ReqGet::clear_has_keep_proportion() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ReqGet::clear_keep_proportion() {
+  keep_proportion_ = false;
+  clear_has_keep_proportion();
+}
+inline bool ReqGet::keep_proportion() const {
+  return keep_proportion_;
+}
+inline void ReqGet::set_keep_proportion(bool value) {
+  set_has_keep_proportion();
+  keep_proportion_ = value;
 }
 
 // -------------------------------------------------------------------

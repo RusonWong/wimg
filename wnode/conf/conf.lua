@@ -1,4 +1,4 @@
-local_addr = "192.168.52.141"
+local_addr = "127.0.0.1"
 port = 9999
 
 threads_count = 20

@@ -89,6 +89,7 @@ int on_request_get(const int fd, conn* c)
 	IMG_PROCCESS_CONFIG ipConf;
 	ipConf.out_height = req.height();
 	ipConf.out_width = req.width();
+	ipConf.keep_proportion = req.keep_proportion();
 
 	char* new_img_buff;
 	size_t new_img_len;
@@ -117,8 +118,6 @@ int on_request_set(const int fd, conn* c)
 {	
 	ReqResponse response;
 	LocalStorage* plocalStorage = LocalStorage::getInstance();
-	
-	 
 
 	//get req body
 	char* req_buff;
@@ -149,11 +148,20 @@ int on_request_set(const int fd, conn* c)
 	string new_name = MD5(content, rc).toString();
 	cout<<"new name is "<<new_name<<endl;
 
-	//save to cache
-	int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)new_name.c_str(), new_name.length(), content, rc);
+	//compression image and save as the primary
+	IMG_PROCCESS_CONFIG ipConf;
+	ipConf.out_height = 1024;
+	ipConf.out_width = 1024;
+	ipConf.keep_proportion = true;
+
+	char* new_img_buff;
+	size_t new_img_len;
+	int p_ret = resize_image(content,rc,new_img_buff,new_img_len,&ipConf, true);
+
+	/////////save proccessed image to cache and storage////////////
+	int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
 	if( cache_set_rt )
 	{
-		//printf("cache of %s set done\n", filePath);
 		cout<<"cache of "<<filePath<<" set success\n";
 	}
 	else
@@ -161,9 +169,15 @@ int on_request_set(const int fd, conn* c)
 		cout<<"cache of "<<filePath<<" set failed\n";
 	}
 	
+	plocalStorage->save_file(new_img_buff, new_img_len, new_name);
 
-	plocalStorage->save_file(content, rc,new_name);
+	///////////save origin image to storage/////////////
+	string origin_image_name = new_name + ".origin";
+	origin_image_name = MD5(origin_image_name).toString();
 
+	plocalStorage->save_file(content, rc, origin_image_name);
+
+	///sned response/////
 	response.set_rspcode(REQ_SUCCESS);
 	response.set_newname(new_name);
 

@@ -188,6 +188,8 @@ void retrive_file(string md5, int width, int height)
     req.set_imageid(md5);
     req.set_width(width);
     req.set_height(height);
+    req.set_keep_proportion(true);
+
     size_t reqbuffsize = req.ByteSize();
     char* reqbuff = new char[reqbuffsize];
     req.SerializeToArray(reqbuff, reqbuffsize);

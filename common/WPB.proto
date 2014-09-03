@@ -2,7 +2,8 @@ message ReqGet
 {
 	required string imageID = 1;
 	required int32	width = 2;
-	required int32 height = 3;
+	required int32 	height = 3;
+	required bool	keep_proportion = 4;
 }
 
 message ReqSet
