@@ -60,7 +60,7 @@ you should setup enviroment first.
 
 Build Wimg
 ==========
-    sudo apt-get install openssl libevent-devel ImageMagick-devel libmemcached-devel
+    sudo apt-get install openssl libevent-dev cmake libmagickwand-dev libmemcached-dev
     cd [WIMG_ROOT]
     make
 
