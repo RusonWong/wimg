@@ -26,7 +26,14 @@ def w_recv(client):
 	c_len_str = c_len_str.strip('\0')
 	c_len = string.atoi(c_len_str)
 
-	content = client.recv(c_len)
+	content = ""
+	r_len = c_len
+
+	while( r_len > 0):
+		package = client.recv(c_len)
+		content+=package
+		r_len -= len(package)
+	
 	return content
 
 def w_send_pb(client, pb):

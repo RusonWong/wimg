@@ -49,9 +49,9 @@ def getNodeAddr(reqKey):
 	client.close()
 	return nodeInfo.nodeAddr,nodeInfo.nodePort
 
-def uploadImage(imgName):
+def uploadImage(imgName, imgContent):
 	#get file content
-	content = getLocalFile(imgName)
+	content = imgContent
 
 	reqKey = hashlib.md5(content).hexdigest()
 	#print "content key is ",reqKey
@@ -75,6 +75,7 @@ def uploadImage(imgName):
 
 	print "resp:new name is:", response.newname
 	nodeSocket.close()
+	return response.newname
 
 
 def getImage(key, width, height):
@@ -102,10 +103,12 @@ def getImage(key, width, height):
    	
    	#get content
    	imgContent = util.w_recv(nodeSocket)
-   	writeLocalFile(key+".jpg", imgContent)
-   	nodeSocket.close()
- 	print "saved"
 
+   	
+   	nodeSocket.close()
+ 	return imgContent
+
+ 	
 while(True):
 	cmd = raw_input("command:")
 	if not cmd:
@@ -116,13 +119,14 @@ while(True):
 	
 	if cmd_items[0] == "upload" and len(cmd_items) == 2:
 		fileName = cmd_items[1]	
-		uploadImage(fileName)
+		imgContent = getLocalFile(fileName)
+		uploadImage(fileName, imgContent)
 	elif cmd_items[0] == "get" and len(cmd_items) == 4:
 		key = cmd_items[1]
 		width = int(cmd_items[2])
 		height = int(cmd_items[3])
-		getImage(key, width, height)
-
+		imgContent = getImage(key, width, height)
+		writeLocalFile(key+".jpg", imgContent)
 
 
 
