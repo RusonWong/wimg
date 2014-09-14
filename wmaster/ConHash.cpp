@@ -31,9 +31,9 @@ void ConHash::addVirtualNode(CVirtualNode* vNode)
 
 
 //add value set
-int ConHash::addNode(CNode* node, int  vNodeCount)
+int ConHash::addNode(ConHashNode* node, int  vNodeCount)
 {
-	//create virtual nodes and add them to CNode and VNodeList 
+	//create virtual nodes and add them to ConHashNode and VNodeList 
 	string nodeKey = node->getKey();
 	for(int i = 0; i < vNodeCount; i++)
 	{
@@ -53,7 +53,7 @@ int ConHash::addNode(CNode* node, int  vNodeCount)
 
 
 //find the node to proccess the req key
-CNode* ConHash::hash2Node(string key)
+ConHashNode* ConHash::hash2Node(string key)
 {
 	//calculate hash value
 	int v = hash(key);
@@ -89,7 +89,25 @@ CNode* ConHash::hash2Node(string key)
 	}
 
 	return vNodeList[pos]->getActualNode();
+}
 
+int ConHash::removeNode(ConHashNode* node)
+{
+	vector<CVirtualNode*>::iterator iter = vNodeList.begin();
+	while(iter != vNodeList.end())
+	{
+		if((*iter)->getActualNode() == node)
+		{
+			//find virtual node
+			printf("find virtual node and erase it\n");
+			iter = vNodeList.erase(iter);
+		}
+		else
+		{
+			iter ++;
+		}
+	}
+	return 1;
 }
 
 int ConHash::hash(string key)

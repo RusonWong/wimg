@@ -13,8 +13,6 @@
 using namespace std;
 
 
-
-
 void on_req_set(const int fd)
 {
 	//get req body
@@ -71,11 +69,11 @@ void on_req_node_add(const int fd)
 		}
 
 		cout<<"client addr is "<<req.nodeaddr()<<",port is "<<req.nodeport()<<endl;
-
-		WNode node;
-		node.nodeName = "";
-		node.nodeIP = req.nodeaddr();
-		node.nodePort = req.nodeport();
+		
+		WNode* node = new WNode(req.nodeaddr(), req.nodeport());
+		//node->nodeName = "";
+		//node->nodeIP = req.nodeaddr();
+		//node->nodePort = req.nodeport();
 
 		nodeManager->addNode(node);
 		cout<<"node add ok"<<endl;
@@ -107,13 +105,8 @@ void on_req_node_add(const int fd)
 		}
 
 		cout<<"client addr is "<<req.nodeaddr()<<",port is "<<req.nodeport()<<endl;
-
-		WNode node;
-		node.nodeName = "";
-		node.nodeIP = req.nodeaddr();
-		node.nodePort = req.nodeport();
-
-		nodeManager->removeNode(node);
+		
+		nodeManager->removeNode(req.nodeaddr(), req.nodeport());
 		cout<<"node remove ok"<<endl;
 	}
 	else

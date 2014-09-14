@@ -27,17 +27,26 @@ int main()
 	srand((unsigned)time(&t)); // 初始化随机数发生器
 
 	ConHash conHash;
-	conHash.addNode(new CNode(randomKey()));
-	conHash.addNode(new CNode(randomKey()));
-	conHash.addNode(new CNode(randomKey()));
-	conHash.addNode(new CNode(randomKey()));
+
+	ConHashNode* node1 = new ConHashNode(randomKey());
+	conHash.addNode(node1);
+	conHash.addNode(new ConHashNode(randomKey()));
+	conHash.addNode(new ConHashNode(randomKey()));
+	conHash.addNode(new ConHashNode(randomKey()));
 
 	char ch;
 	while(cin>>ch)
 	{
-		string key = randomKey();
-		CNode* pNode = conHash.hash2Node(key);
-		cout<<"node is:"<<pNode->getKey()<<endl;
+		if(ch == 'a')
+		{
+			string key = randomKey();
+			ConHashNode* pNode = conHash.hash2Node(key);
+			cout<<"node is:"<<pNode->getKey()<<endl;
+		}
+		else if(ch == 'd')
+		{
+			conHash.removeNode(node1);
+		}
 	}
 
 }

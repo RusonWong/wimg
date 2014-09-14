@@ -8,20 +8,23 @@
 
 using namespace std;
 
-class CNode
+class ConHashNode
 {
-private:
+protected:
 	vector<void*> vNodeList;
 	string key;
+
 public:
-	CNode(string _key){
+	ConHashNode(string _key){
 		key = _key;
 	};
-	~CNode(){};
+	ConhashNode(){};
+	~ConHashNode(){};
 	string getKey()
 	{
 		return key;
 	}
+
 	void setKey(string _key)
 	{
 		key = _key;
@@ -43,7 +46,7 @@ public:
 class CVirtualNode
 {
 private:
-	CNode* pNode;
+	ConHashNode* pNode;
 	string key;
 	int hashValue;
 
@@ -61,12 +64,12 @@ public:
 		return key;
 	}
 
-	CNode* getActualNode()
+	ConHashNode* getActualNode()
 	{
 		return this->pNode;
 	}
 
-	void setActualNode(CNode* node)
+	void setActualNode(ConHashNode* node)
 	{
 		this->pNode = node;
 	}
@@ -95,8 +98,9 @@ public:
 	~ConHash(){};
 
 	//add value set
-	int addNode(CNode* node, int  vNodeCount = 3);
-	CNode* hash2Node(string key);
+	int addNode(ConHashNode* node, int  vNodeCount = 3);
+	ConHashNode* hash2Node(string key);
+	int removeNode(ConHashNode* node);
 };
 
 

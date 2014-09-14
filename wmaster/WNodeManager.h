@@ -1,15 +1,23 @@
+#ifndef WNODEMANAGER_H
+#define WNODEMANAGER_H
+
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "ConHash.h"
+
 using namespace std;
 
-struct WNode
+class WNode: public ConHashNode
 {
+public:
 	string 	nodeName;
 	string	nodeIP;
 	int 	nodePort;
-	//other params
+
+
+	WNode(string addr, int port);
 };
 
 
@@ -17,10 +25,15 @@ class WNodeManager
 {
 private:
 	WNodeManager();
-	vector<WNode> runningNodes;
 	static WNodeManager* p_nodemanager_instance;
+	//using common hash
+	vector<WNode*> runningNodes;
+	//using consistent hash
+	ConHash conHash;
+
+
+	WNode* findNode(string key);
 public:
-	
 	~WNodeManager()
 	{
 		if(p_nodemanager_instance)
@@ -39,8 +52,11 @@ public:
 		return p_nodemanager_instance;
 	}
 
-	int addNode(WNode new_node);
-	int removeNode(WNode node);
+	int addNode(WNode* new_node);
+	int removeNode(string key);
+	int removeNode(string addr, int port);
 
 	WNode dispatchRequest(string key);
 };
+
+#endif
