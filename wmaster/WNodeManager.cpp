@@ -18,16 +18,18 @@ int WNodeManager::addNode(WNode new_node)
 
 int WNodeManager::removeNode(WNode node)
 {
+	cout<<"removing node "<<node.nodeIP<<":"<<node.nodePort<<endl;
 	std::vector<WNode>::iterator iter= runningNodes.begin();
 	for(;iter != runningNodes.end(); iter++)
 	{
-		if(iter->nodeName == node.nodeName)
+		if(iter->nodeIP == node.nodeIP && iter->nodePort == node.nodePort)
 		{
+			cout<<"find and removing\n";
 			runningNodes.erase(iter);
 			return 1;
 		}
 	}
-
+	cout<<"can not find the node";
 	return 0;
 }
 

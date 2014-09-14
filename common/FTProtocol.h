@@ -7,6 +7,7 @@
 #define METHOD_GET '1'
 #define METHOD_SET '2'
 #define METHOD_ADD_NODE '3'
+#define METHOD_REMOVE_NODE '4'
 
 #define MAX_LEN_LEN 10
 

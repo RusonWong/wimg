@@ -86,6 +86,42 @@ void on_req_node_add(const int fd)
 	}
  }
 
+ void on_req_node_remove(const int fd)
+ {
+ 	WNodeManager* nodeManager = WNodeManager::getInstance();
+
+	char* req_buff;
+	size_t req_len;
+	int cl = w_recv(fd,req_buff);
+
+	if(cl > 0)
+	{
+		NodeInfo req;
+		if(!req.ParseFromArray(req_buff, cl))
+		{
+			cerr<<"error when parse get request\n";
+			//response.set_rspcode(REQ_FAILED);
+			//response.set_errcode(ERR_INVALID_PARAMS);
+			//w_send_pb(fd, &response);
+			return;
+		}
+
+		cout<<"client addr is "<<req.nodeaddr()<<",port is "<<req.nodeport()<<endl;
+
+		WNode node;
+		node.nodeName = "";
+		node.nodeIP = req.nodeaddr();
+		node.nodePort = req.nodeport();
+
+		nodeManager->removeNode(node);
+		cout<<"node remove ok"<<endl;
+	}
+	else
+	{
+		cout<<"can not get node info\n";
+	}
+ }
+
 
 
 
@@ -113,6 +149,11 @@ int on_request_arrive(const int fd, conn* c)
 	{
 		cout<<"method: add node\n";
 		on_req_node_add(fd);
+	}
+	else if(method[0] == METHOD_REMOVE_NODE)
+	{
+		cout<<"method: remove node\n";
+		on_req_node_remove(fd);
 	}
 	else
 	{

@@ -9,6 +9,8 @@
 #include <fcntl.h> //open
 #include <assert.h>
 #include "Config.h"
+#include <signal.h>
+#include <wand/MagickWand.h>
 
 #define LISTEN_BACKLOG 32
 
@@ -55,8 +57,27 @@ void base_event_handler(const int fd, const short which,void* arg)
 	dispatch_conn_new(sfd);
 }
 
+static void sighandler(int signal) 
+{
+    if (event_base_loopexit(main_base, NULL)) {
+    	printf("Error exit\n");
+    }
+}
+
 int start_server(int nThreads)
 {
+	//signal hander to process exit
+	sigset_t sigset;
+    sigemptyset(&sigset);
+    struct sigaction siginfo;
+    siginfo.sa_handler = sighandler;
+    siginfo.sa_mask = sigset;
+    siginfo.sa_flags = SA_RESTART;
+  
+    sigaction(SIGINT, &siginfo, NULL);
+    sigaction(SIGTERM, &siginfo, NULL);
+
+
 	total_threads = nThreads;
 
 	int ret;
@@ -94,6 +115,15 @@ int start_server(int nThreads)
 
 	thread_init(total_threads);
 
+	 //init magickwand
+    MagickWandGenesis();
+
+    //block and loop
 	event_base_loop(main_base,0);
+
+	MagickWandTerminus();
+
+	event_base_free(main_base);
+
 }
 
