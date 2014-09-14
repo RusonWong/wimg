@@ -5,6 +5,13 @@ import os,sys
 
 from wimgsdk import wclient
 
+
+def __render2Response(request, template_src, params = {}):
+	template = loader.get_template(template_src)
+	context = RequestContext(request,params)
+	return HttpResponse(template.render(context))
+
+
 def getLocalFile(fileName):
 	path =  "./imgs/" + fileName
 	f = open(path,"r")
@@ -13,15 +20,7 @@ def getLocalFile(fileName):
 	return content
 
 def index(request):
-	fileKey = request.GET.get("file")
-	width = request.GET.get("w")
-	height = request.GET.get("h")
-
-	imgContent = wclient.getImage(fileKey,int(width),int(height))
-	print "size is:", len(imgContent)
-	response = HttpResponse(imgContent, content_type = 'image/jpeg')
-
-	return response
+	return __render2Response(request, 'welcome.html')
 
 def upload(request):
 	file_obj = request.FILES.get('userfile', None)
@@ -30,22 +29,21 @@ def upload(request):
 
 	imgContent = file_obj.read(file_obj.size)
 	print "imgContent size sent:",len(imgContent)
-
 	newname = wclient.uploadImage(file_obj.name, imgContent)
-
-	imgHref = '/wimg/img?file='+newname+'&w=500&h=500'
+	imgHref = '/wimg/img?k='+newname+'&w=500&h=500'
 	ret = '<html><a href="'+ imgHref +'" >' + newname + '</a>' +'</html>'
 	return HttpResponse(ret)
 
 def upload_page(request):
-	template = loader.get_template('upload_page.html')
-	context = RequestContext(request,{})
-	return HttpResponse(template.render(context))
+	return __render2Response(request, 'upload_page.html')
 
 def img(request):
-	fileKey = request.GET.get("file")
+	fileKey = request.GET.get("k")
 	width = request.GET.get("w")
 	height = request.GET.get("h")
+
+	if not fileKey:
+		return __render2Response(request, 'welcome.html')
 
 	imgContent = wclient.getImage(fileKey,int(width),int(height))
 	response = HttpResponse(imgContent, content_type = 'image/jpeg')
