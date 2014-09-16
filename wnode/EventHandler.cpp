@@ -57,19 +57,30 @@ int on_request_get(const int fd, conn* c)
 	
 	int cache_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get(buff, imageid_len, buffptr, len);
 	if(cache_rt == 0){
-		LocalStorage* plocalStorage = LocalStorage::getInstance();
+	//	LocalStorage* plocalStorage = LocalStorage::getInstance();
 		
-
-		if(plocalStorage->get_file(fileName, buffptr, len) == 0)
+		if(!((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get(buff, imageid_len, buffptr, len))
 		{
-			//printf("can not find file %s\n", fileName);
 			cout<<"can not find file "<<fileName<<"\n";
 			response.set_rspcode(REQ_FAILED);
 			response.set_errcode(ERR_FILE_NOT_FOUND);
 			w_send_pb(fd, &response);
 			return 0;
 		}
-
+		else
+		{
+			cout<<"got file from beansdb\n";
+		}
+		/*if(plocalStorage->get_file(fileName, buffptr, len) == 0)
+		//{
+			//printf("can not find file %s\n", fileName);
+			cout<<"can not find file "<<fileName<<"\n";
+			response.set_rspcode(REQ_FAILED);
+			response.set_errcode(ERR_FILE_NOT_FOUND);
+			w_send_pb(fd, &response);
+			return 0;
+		//}
+		*/
 		//set cache
 		int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, imageid_len, buffptr, len);
 		if(cache_set_rt)
@@ -169,13 +180,35 @@ int on_request_set(const int fd, conn* c)
 		cout<<"cache of "<<filePath<<" set failed\n";
 	}
 	
-	plocalStorage->save_file(new_img_buff, new_img_len, new_name);
+	cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
+	if( cache_set_rt )
+	{
+		cout<<"save "<<filePath<<" to beansdb success\n";
+	}
+	else
+	{
+		cout<<"save "<<filePath<<" to beansdb failed\n";
+	}
+
+	//plocalStorage->save_file(new_img_buff, new_img_len, new_name);
 
 	///////////save origin image to storage/////////////
 	string origin_image_name = new_name + ".origin";
 	origin_image_name = MD5(origin_image_name).toString();
 
-	plocalStorage->save_file(content, rc, origin_image_name);
+	//plocalStorage->save_file(content, rc, origin_image_name);
+
+
+	cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
+	if( cache_set_rt )
+	{
+		cout<<"save origin "<<filePath<<" to beansdb success\n";
+	}
+	else
+	{
+		cout<<"save origin "<<filePath<<" to beansdb failed\n";
+	}
+
 
 	///sned response/////
 	response.set_rspcode(REQ_SUCCESS);

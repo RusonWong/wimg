@@ -58,6 +58,14 @@ you should setup enviroment first.
     make && make install
     ldconfig
 
+
+### beansdb
+    git clone https://github.com/douban/beansdb
+    cd beansdb
+    ./configure --prefix=/usr/local
+    make
+    [run aclocal if 'error: possibly undefined macro: AM_INIT_AUTOMAKE' occurs]
+
 Build Wimg
 ==========
     sudo apt-get install openssl libevent-dev libmagickwand-dev libmemcached-dev

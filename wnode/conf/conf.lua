@@ -8,3 +8,6 @@ master_port = 8888
 
 memcached_addr = "127.0.0.1"
 memcached_port = 11211
+
+beansdb_addr = "127.0.0.1"
+beansdb_port = 7900

@@ -51,5 +51,15 @@ void Config::load(string configPath)
        this->memPort = (int)lua_tonumber(L, -1);
     lua_pop(L, 1);
 
+    lua_getglobal(L, "beansdb_addr");
+    if(lua_isstring(L, -1))
+        this->beansdbAddr = (string)lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "beansdb_port");
+    if(lua_isnumber(L, -1))
+       this->beansdbPort = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
     lua_close(L);
 }

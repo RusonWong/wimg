@@ -18,6 +18,7 @@ struct LIBEVENT_THREAD
 	event_queue *new_conn_queue;
 
 	MCConnector mcc;
+	MCConnector bdbc;
 };
 
 #endif

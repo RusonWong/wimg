@@ -55,7 +55,9 @@ void WorkerThreads::setup_event_thread(LIBEVENT_THREAD *me)
 	me->base=event_init();//every thread has its own event_base
 	//initial memcached connector
 	me->mcc.init(globalConfig.memAddr, globalConfig.memPort);
-
+	//initial beansdb connector
+	me->bdbc.init(globalConfig.beansdbAddr, globalConfig.beansdbPort);
+	
 	if(!me->base)
 	{
 		fprintf(stderr,"can't allocate event base\n");

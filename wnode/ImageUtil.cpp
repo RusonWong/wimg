@@ -11,8 +11,6 @@ int  resize_image(char* in_buff, size_t in_len, char* &out_buff, size_t &out_len
 	
 	int width,height;
 	
-	MagickWandGenesis();
-	
 	m_wand = NewMagickWand();
 	// Read the image - all you need to do is change "logo:" to some other
 	// filename to have this resize and, if necessary, convert a different file
@@ -64,8 +62,6 @@ int  resize_image(char* in_buff, size_t in_len, char* &out_buff, size_t &out_len
 	
 	/* Clean up */
 	if(m_wand)m_wand = DestroyMagickWand(m_wand);
-	
-	MagickWandTerminus();
 
 	return 1;
 }

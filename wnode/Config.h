@@ -21,6 +21,9 @@ public:
 	string 	memAddr;
 	int		memPort;
 
+	string beansdbAddr;
+	int		beansdbPort;
+
 public:
 	Config(){}
 	~Config(){}
