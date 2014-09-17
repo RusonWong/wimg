@@ -14,7 +14,8 @@ class MCConnector
 {
 private:
 	memcached_st *memc;
-
+	int  expire_time;
+	
 public:
 	MCConnector(){};
 	~MCConnector(){
@@ -24,7 +25,7 @@ public:
 		}
 	};
 
-	int init(string addr, int port);
+	int init(string addr, int port, bool for_cache = true);
 
 
 	int cache_get(char* key, size_t key_len, char* &value, size_t &value_len);

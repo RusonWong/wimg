@@ -195,10 +195,10 @@ int on_request_set(const int fd, conn* c)
 	///////////save origin image to storage/////////////
 	string origin_image_name = new_name + ".origin";
 	origin_image_name = MD5(origin_image_name).toString();
+	cout<<"origin name is "<<origin_image_name<<endl;
+	//plocalStorage->save_file(content, rc, origin_image_name);
 
-	plocalStorage->save_file(content, rc, origin_image_name);
 
-/*
 	cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
 	if( cache_set_rt )
 	{
@@ -208,7 +208,7 @@ int on_request_set(const int fd, conn* c)
 	{
 		cout<<"save origin "<<filePath<<" to beansdb failed\n";
 	}
-*/
+
 
 
 	///sned response/////

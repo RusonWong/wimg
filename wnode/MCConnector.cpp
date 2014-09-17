@@ -6,16 +6,38 @@
 
 using namespace std;
 
-int MCConnector::init(string addr, int port)
+
+int MCConnector::init(string addr, int port, bool for_cache)
 {
+
+    //test();
     memcached_server_st *server;
     memcached_return rc;
 
     memc = memcached_create(NULL);
+    cout<<"connect to "<<addr<<":"<<port<<endl;
+
     server = memcached_server_list_append(NULL,addr.c_str(),port,&rc);
-    rc=memcached_server_push(memc,server);
+    rc = memcached_server_push(memc,server);
+
+    if(for_cache)
+    {
+        expire_time = EXPIRE_TIME;
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_BINARY_PROTOCOL, 1);
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_NO_BLOCK, 1); 
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_NOREPLY, 1); 
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_TCP_KEEPALIVE, 1); 
+    }
+    else
+    {
+        expire_time = 0;
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_BINARY_PROTOCOL, 0);
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_NO_BLOCK, 1); 
+        memcached_behavior_set(memc, MEMCACHED_BEHAVIOR_TCP_KEEPALIVE, 1); 
+    }
     memcached_server_list_free(server);
 
+    cout<<"MEMCACHED_SUCCESS:"<<MEMCACHED_SUCCESS<<endl;
     if(rc == MEMCACHED_SUCCESS)
     {
         cout<<"connect memcached server ok\n";
@@ -52,13 +74,13 @@ int MCConnector::cache_get(char* key, size_t key_len, char* &value, size_t &valu
 int MCConnector::cache_set(char* key, size_t key_len, char* value, size_t value_len)
 {
     cout<<"cache set begin\n";
-    mc_ret rc = memcached_set(memc, key , key_len, value, value_len,EXPIRE_TIME,0);
+    mc_ret rc = memcached_set(memc, key , key_len, value, value_len,expire_time,0);
     if(rc == MEMCACHED_SUCCESS)
     {
         cout<<"cache set OK\n";
         return 1;
     }
-    cout<<"cache set failed\n";
+    cout<<"cache set failed, result:"<<rc<<"\n";
     return 0;
 }
 
