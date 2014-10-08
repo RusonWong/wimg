@@ -30,8 +30,8 @@ you should setup enviroment first.
     make && make install 
     
 ### imagemagick
-    wget http://www.imagemagick.org/download/ImageMagick-6.8.9-0.tar.gz
-    tar xzvf ImageMagick-6.8.9-0.tar.gz 
+    wget ftp://ftp.kddlabs.co.jp/graphics/ImageMagick/ImageMagick-6.8.9-8.tar.gz
+    tar xzvf ImageMagick-6.8.9-8.tar.gz 
     cd ImageMagick-6.8.9-0 
     ./configure  --prefix=/usr/local 
     make && make install 
