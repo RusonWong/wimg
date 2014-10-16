@@ -22,7 +22,7 @@ you should setup enviroment first.
     tar zxvf  openssl-1.0.1g.tar.gz 
     ./config shared --prefix=/usr/local --openssldir=/usr/ssl 
     make && make install 
-    
+    [make install_sw when "Expected text after =item, not a number"]
 ### libevent
     wget http://cloud.github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz 
     tar zxvf libevent-2.0.17-stable.tar.gz 
