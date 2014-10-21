@@ -116,12 +116,12 @@ int multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* con
         return -1;
     }
     int len = fn_end - fn_begin;
-
+    /*
     char* name_buff = (char*)malloc(len + 1);
     snprintf(name_buff, len + 1, "%s", fn_begin);
     name_buff[len + 1] = '\0';
     cout<<"fileName is:"<<name_buff<<endl;
-
+    */
     ////////////////get content type begein////////////////
     char* ct_begin = strstr(buff, typePattern);
     ct_begin += strlen(typePattern);
@@ -170,6 +170,8 @@ int multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* con
         cout<<"new img key is:"<<img_key<<endl;
         img_id = img_key;
     }
+
+    free(boundaryPattern);
 
     return 1;
     //printStr(content_begin,0 , img_len);
@@ -232,6 +234,8 @@ upload_cb(evhtp_request_t* req, void* a)
         evbuffer_add_printf(req->buffer_out,"%s", "upload failed!");
         evhtp_send_reply(req, EVHTP_RES_OK);
     }
+
+    free(buff);
 }
 
 
