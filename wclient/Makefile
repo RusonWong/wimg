@@ -12,8 +12,8 @@ CC := g++
 CFLAGS	:= -std=c++0x `pkg-config --cflags --libs protobuf` `pkg-config --cflags --libs MagickWand` -I../common/ -I../lua/
 OBJECTS	:= $(curobj) WPB.pb.o $(commonobj)  $(luaobj)
 
-wclient: $(OBJECTS)
-	$(CC) $(OBJECTS) -o wclient $(CFLAGS)
+main: $(OBJECTS)
+	$(CC) $(OBJECTS) -o main $(CFLAGS)
 
 WPB.pb.o: ../common/WPB.pb.h ../common/WPB.pb.cc
 	g++ ../common/WPB.pb.cc -c `pkg-config --cflags --libs protobuf` -I ../common/
@@ -28,6 +28,6 @@ $(luaobj):%.o:%.c
 	g++ -c $< -o $@
 
 clean:
-	rm wclient *.o
+	rm main *.o
 	cd ../common && rm *.o
 	

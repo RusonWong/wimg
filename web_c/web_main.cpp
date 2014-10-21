@@ -4,11 +4,12 @@
 #include <evhtp.h>
 #include "util.h"
 
+#include "wclient.h"
+
 using namespace std;
 
 
 char* welcome_html;
-
 
 void init()
 {
@@ -42,7 +43,7 @@ welcome_cb(evhtp_request_t* req, void * a)
 }
 
 
-void multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* content_type)
+int multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* content_type, string& img_id)
 {
     char* boundary = NULL;
     char* boundary_end = NULL;
@@ -54,7 +55,7 @@ void multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* co
     if(strstr(content_type, "boundary") == NULL)
     {
         cout<<"boundary is not found in content type"<<endl;
-        return;
+        return -1;
     }
 
     boundary = strchr(content_type, '=');
@@ -68,6 +69,7 @@ void multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* co
         if (!boundary_end) 
         {
             cout<<"Invalid boundary in multipart/form-data POST data"<<endl;
+            return -1;
         }
     } 
     else 
@@ -111,7 +113,7 @@ void multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* co
     if(fn_begin == NULL || fn_end == NULL)
     {
         cout<<"failed to parse"<<endl;
-        return;
+        return -1;
     }
     int len = fn_end - fn_begin;
 
@@ -160,12 +162,18 @@ void multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* co
     int content_len = content_end - content_begin;
     cout<<"content len is:"<<content_len<<endl;
 
+    string img_key;
+    int ret = upload_img(content_begin,content_len, img_key);
+
+    if(ret == 1)
+    {
+        cout<<"new img key is:"<<img_key<<endl;
+        img_id = img_key;
+    }
+
+    return 1;
     //printStr(content_begin,0 , img_len);
-    write_local_file("img.jpg",content_begin, content_len);
-
-    //////////////////////get img content end////////////////
-
-
+    //write_local_file("img.jpg",content_begin, content_len);
 }
 
 void 
@@ -184,9 +192,6 @@ upload_cb(evhtp_request_t* req, void* a)
     int post_size = atoi(content_len);
     cout<<"content len is:"<<post_size<<endl;
 
-    
-
-    
     evbuf_t *buf;
     buf = req->buffer_in;
     char* buff = (char *)malloc(post_size);
@@ -203,29 +208,30 @@ upload_cb(evhtp_request_t* req, void* a)
             cout<<"evbuffer_remove failed!"<<endl;
         }
     }
-
-    write_local_file("temp.jpg",buff,post_size);
-
+//  write_local_file("temp.jpg",buff,post_size);
 
     const char *content_type = evhtp_header_find(req->headers_in, "Content-Type");
-    
 
-    multipart_parse(req, buff, post_size, (char*)content_type);
-    
-    /*char* p = strstr(buff,"boundary");
-    if(p != NULL)
+    string img_id;
+    int ret = multipart_parse(req, buff, post_size, (char*)content_type, img_id);
+    cout<< ret<<endl;
+    if(ret == 1)
     {
-        cout<<"can not find =\n";
+        string img_href = "img?k=" + img_id + "&" + "w=300&h=300";
+        cout<<img_href<<endl;
+
+        string html_content = "<html><head><title>wimg</title></head><body><a href=\"" + img_href +"\">" + img_id + "</a></body></html>";
+        cout<<html_content<<endl;
+        evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
+        evbuffer_add_printf(req->buffer_out,"%s", html_content.c_str());
+        evhtp_send_reply(req, EVHTP_RES_OK);
     }
     else
     {
-        cout<<"find =\n";
+        evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
+        evbuffer_add_printf(req->buffer_out,"%s", "upload failed!");
+        evhtp_send_reply(req, EVHTP_RES_OK);
     }
-    */
-
-    evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "image/jpeg", 0, 0));
-    evbuffer_add_printf(req->buffer_out,"%s", buff);
-    evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
 
@@ -233,6 +239,51 @@ upload_cb(evhtp_request_t* req, void* a)
 void 
 get_img_cb(evhtp_request_t* req, void* a)
 {
+
+    const char *uri;
+    uri = req->uri->path->full;
+    const char *rfull = req->uri->path->full;
+    const char *rpath = req->uri->path->path;
+    const char *rfile= req->uri->path->file;
+
+    cout<<"full:"<<rfull<<endl;
+    cout<<"rpath:"<<rpath<<endl;
+    cout<<"rfile:"<<rfile<<endl;
+
+    evhtp_kvs_t *params;
+    params = req->uri->query;
+
+    const char* str_k = evhtp_kv_find(params, "k");
+    const char* str_w = evhtp_kv_find(params, "w");
+    const char* str_h = evhtp_kv_find(params, "h");
+
+    cout<<"k:"<<str_k<<endl;
+    cout<<"w:"<<str_w<<endl;
+    cout<<"h:"<<str_h<<endl;
+
+    int w = atoi(str_w);
+    int h = atoi(str_h);
+
+    string md5(str_k);
+    char* content;
+    size_t content_len;
+
+    int ret = get_img(md5, w, h, content, content_len);
+
+    if(ret == 1)
+    {
+        evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "image/jpeg", 0, 0));
+        evbuffer_add(req->buffer_out,content, content_len);
+        evhtp_send_reply(req, EVHTP_RES_OK);
+
+        delete content;
+    }
+    else
+    {
+        evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
+        evbuffer_add_printf(req->buffer_out,"%s", "error get img");
+        evhtp_send_reply(req, EVHTP_RES_OK);
+    }
 
 }
 

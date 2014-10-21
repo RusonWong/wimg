@@ -6,11 +6,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <iostream>
-#include <fstream>
+
 
 #include "FTProtocol.h"
 #include "md5.h"
+#include "wclient.h"
 
 using namespace std;
 
@@ -20,60 +20,6 @@ using namespace std;
 #define USING_PROTOBUFF 1
 
 
-int get_local_file(std::string key, char* &buffptr,size_t& len)
-{
-    string file_path = "./files/" + key;
-    ifstream ifile(file_path.c_str());
-    if (ifile.fail())
-    {
-        std::cout<<("No file " + key + " found");
-        return 0;
-    }
-    else{
-
-        ifile.seekg(0,ios::end);
-        long fSize = (long)ifile.tellg();
-        ifile.seekg(0,ios::beg);
-
-        len = (size_t)fSize;
-
-        cout<<"file lenth is:"<<fSize<<endl;
-        buffptr = new char[fSize];
-        int size_read = 0;
-        while(size_read != fSize)
-        {   
-            ifile.read(buffptr + size_read, fSize - size_read);
-            size_read += fSize;
-        }
-        return 1;
-    }
-
-    ifile.close();
-    return 1;
-}
-
-int write_local_file(std::string filePath, char* content, size_t len)
-{
-    std::ofstream ofile;
-   
-    ofile.open(filePath.c_str(), std::ios::binary);
-    if(ofile.fail())
-    {
-        printf("create file failed\n");
-        return 0;
-    }
-    printf("create file successs\n");
-
-    int size_writen = 0;
-    while(size_writen != len)
-    {
-        ofile.write(content+size_writen, len - size_writen);
-        size_writen += len;
-    }
-
-    ofile.close();
-    return 1;
-}
 
 int do_connect(const char* addr, int port)
 {
@@ -104,7 +50,7 @@ int do_connect(const char* addr, int port)
 
 
 //get the nodeserver to proccess this request
-int get_proccess_node(string md5,string& addr, int &port)
+int get_proccess_node(string md5, string& addr, int &port)
 { 
     int masterSock = do_connect(MASTER_ADDR,MASTER_PORT);
     if (masterSock < 0)
@@ -157,7 +103,7 @@ int get_proccess_node(string md5,string& addr, int &port)
 #ifdef USING_PROTOBUFF
 //with protobuf version
 #include "WPB.pb.h"
-void retrive_file(string md5, int width, int height)
+int get_img(string md5, int width, int height, char* &content, size_t & content_len)
 {
    
     string nodeAddr;
@@ -165,7 +111,7 @@ void retrive_file(string md5, int width, int height)
     if(get_proccess_node(md5, nodeAddr, nodePort) == 0)
     {
         cout<<"can not get node to proccess this req";
-        return;
+        return -1;
     }
 
     //connect to nodeserver
@@ -173,7 +119,7 @@ void retrive_file(string md5, int width, int height)
     if (nodeSock < 0)
     {
        cout<<"conenction  to master error\n";
-       return;
+       return -1;
     }
 
     //send method
@@ -181,7 +127,7 @@ void retrive_file(string md5, int width, int height)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() to master failure!\n");
-        return;
+        return -1;
     }
     
     ReqGet req;
@@ -200,7 +146,7 @@ void retrive_file(string md5, int width, int height)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() failure!\n");
-        return;
+        return -1;
     }
 
     char* cbuf;
@@ -209,7 +155,7 @@ void retrive_file(string md5, int width, int height)
     if(rc == 0)
     {
         printf("connection error, got size 0\n");
-        return;
+        return -1;
     }
     
     ReqResponse response;
@@ -217,49 +163,43 @@ void retrive_file(string md5, int width, int height)
     if(response.rspcode() == REQ_FAILED)
     {
         printf("ERROR GET IMAGE\n");
-        return;
+        return -1;
     }
     delete cbuf;
 
     char* content_buf;
-    int content_len = w_recv(nodeSock, content_buf);
+    int content_len_t = w_recv(nodeSock, content_buf);
     
-    if(content_len == 0)
+    if(content_len_t == 0)
     {
         printf("connection error when recv img content\n");
-        return;
+        return -1;
     }
 
+    content_len = content_len_t;
+    content = content_buf;
+    /*
     string filePath = "./files/" + md5 + "_download.jpg";
     write_local_file(filePath, content_buf, content_len);
     
     delete content_buf;
-
+    */
     close(nodeSock);
     printf("done\n");
+    return 1;
 }
 
-void do_send_file(string fileName)
+int upload_img(char* fileContent, size_t fileLen)
 {
 
-    //get file content
-    char* fileContent;
-    size_t fileLen;
-    if(!get_local_file(fileName, fileContent, fileLen))
-    {
-        printf("error open file\n");
-        return;
-    }
-
     string img_md5 = MD5(fileContent,fileLen).toString();
-
 
     string nodeAddr;
     int    nodePort;
     if(get_proccess_node(img_md5, nodeAddr, nodePort) == 0)
     {
         cout<<"can not get node to proccess this req";
-        return;
+        return -1;
     }
 
     //connect to nodeserver
@@ -269,11 +209,10 @@ void do_send_file(string fileName)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() failure!\n");
-        return;
+        return -1;
     }
 
     ReqSet reqSet;
-    reqSet.set_imagename(fileName);
     reqSet.set_md5(img_md5);
 
     size_t req_len = reqSet.ByteSize();
@@ -285,7 +224,7 @@ void do_send_file(string fileName)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() failure!\n");
-        return;
+        return -1;
     }
 
 
@@ -295,7 +234,7 @@ void do_send_file(string fileName)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() failure!\n");
-        return;
+        return -1;
     }
 
     char* rbuff;
@@ -304,7 +243,7 @@ void do_send_file(string fileName)
     if(rc == 0)
     {
         printf("connection error, got size 0\n");
-        return;
+        return -1;
     }
     
     ReqResponse response;
@@ -312,7 +251,7 @@ void do_send_file(string fileName)
     if(response.rspcode() == REQ_FAILED)
     {
         printf("ERROR GET IMAGE\n");
-        return;
+        return -1;
     }
     else
     {
@@ -323,27 +262,10 @@ void do_send_file(string fileName)
 
     close(nodeSock);
     printf("done\n");
+    return 1;
 }
 #endif
 
 
 
-int main(int argc, char** argv)
-{
-    string fileName;
-    string method;
-    cout<<"command:";
-    while(cin>>method>>fileName)
-    {
-        if(method == "upload")
-            do_send_file(fileName);
-        else if(method == "get")
-        {
-            int width, height;
-            cin>>width>>height;
-            retrive_file(fileName,width,height);
-        }
-        cout<<"command:";
-    }
-    return 0;
-}
+
