@@ -247,12 +247,8 @@ get_img_cb(evhtp_request_t* req, void* a)
     const char *uri;
     uri = req->uri->path->full;
     const char *rfull = req->uri->path->full;
-    const char *rpath = req->uri->path->path;
-    const char *rfile= req->uri->path->file;
 
     cout<<"full:"<<rfull<<endl;
-    cout<<"rpath:"<<rpath<<endl;
-    cout<<"rfile:"<<rfile<<endl;
 
     evhtp_kvs_t *params;
     params = req->uri->query;
@@ -261,9 +257,41 @@ get_img_cb(evhtp_request_t* req, void* a)
     const char* str_w = evhtp_kv_find(params, "w");
     const char* str_h = evhtp_kv_find(params, "h");
 
+/*
     cout<<"k:"<<str_k<<endl;
     cout<<"w:"<<str_w<<endl;
     cout<<"h:"<<str_h<<endl;
+*/
+    if(str_k == NULL)
+    {
+        reply_error(req, "img id is not given");
+        return;
+    }
+    else
+    {
+        cout<<"k:"<<str_k<<endl;
+    }
+
+    if(str_k == NULL)
+    {
+        reply_error(req, "width is not given");
+        return;
+    }
+    else
+    {
+        cout<<"kw:"<<str_w<<endl;
+    }
+
+    if(str_h == NULL)
+    {
+        reply_error(req, "height is not given");
+        return;
+    }
+    else
+    {
+        cout<<"h:"<<str_h<<endl;
+    }
+
 
     int w = atoi(str_w);
     int h = atoi(str_h);
