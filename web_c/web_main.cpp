@@ -279,7 +279,7 @@ get_img_cb(evhtp_request_t* req, void* a)
     }
     else
     {
-        cout<<"kw:"<<str_w<<endl;
+        cout<<"w:"<<str_w<<endl;
     }
 
     if(str_h == NULL)
@@ -319,6 +319,29 @@ get_img_cb(evhtp_request_t* req, void* a)
 
 }
 
+void test_cb(evhtp_request_t* req, void* a)
+{
+    char* buff;
+    size_t len;
+    int ret = get_local_file("static/img.jpg",buff,len);
+
+    if(ret == 1)
+    {
+        evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "image/jpeg", 0, 0));
+        evbuffer_add(req->buffer_out,buff, len);
+        evhtp_send_reply(req, EVHTP_RES_OK);
+
+        delete buff;
+    }
+    else
+    {
+        evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
+        evbuffer_add_printf(req->buffer_out,"%s", "error get img");
+        evhtp_send_reply(req, EVHTP_RES_OK);
+    }
+
+}
+
 
 void gen_cb(evhtp_request_t* req, void* a)
 {
@@ -338,6 +361,8 @@ main(int argc, char ** argv) {
     evhtp_set_cb(htp, "/welcome", welcome_cb, (void*)"simple");
     evhtp_set_cb(htp, "/img", get_img_cb, (void*)"simple");
     evhtp_set_cb(htp, "/upload", upload_cb, NULL);
+    evhtp_set_cb(htp, "/test", test_cb, (void*)"simple");
+
 
 
     evhtp_set_gencb(htp, gen_cb, NULL);
