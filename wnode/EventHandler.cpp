@@ -169,6 +169,12 @@ int on_request_set(const int fd, conn* c)
 	size_t new_img_len;
 	int p_ret = resize_image(content,rc,new_img_buff,new_img_len,&ipConf, true);
 
+	if(p_ret == 0)
+	{
+		new_img_buff = content;
+		new_img_len = rc;
+	}
+
 	/////////save proccessed image to cache and storage////////////
 	int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
 	if( cache_set_rt )
@@ -218,6 +224,11 @@ int on_request_set(const int fd, conn* c)
 	w_send_pb(fd, &response);
 
 	delete req_buff;
+	delete content;
+	if(p_ret == 1)
+	{
+		delete new_img_buff;
+	}
 	return 0;
 }
 #endif

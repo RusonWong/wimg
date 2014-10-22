@@ -36,6 +36,11 @@ int  resize_image(char* in_buff, size_t in_len, char* &out_buff, size_t &out_len
 		int origin_width = MagickGetImageWidth(m_wand);
 		int origin_height = MagickGetImageHeight(m_wand);
 
+		if( origin_width < width && origin_height < height)
+		{
+			return 0;
+		}
+
 		float w_scale = ((float)width)/origin_width;
 		float h_scale = ((float)height)/origin_height;
 
