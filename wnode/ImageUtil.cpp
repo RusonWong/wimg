@@ -70,3 +70,21 @@ int  resize_image(char* in_buff, size_t in_len, char* &out_buff, size_t &out_len
 
 	return 1;
 }
+
+
+int get_img_size(char* in_buff, size_t in_len, int& width, int& height)
+{
+	MagickWand *m_wand = NULL;
+	
+	m_wand = NewMagickWand();
+	MagickReadImageBlob(m_wand,in_buff, in_len);
+
+	int origin_width = MagickGetImageWidth(m_wand);
+	int origin_height = MagickGetImageHeight(m_wand);
+
+	width = origin_width;
+	height = origin_height;
+
+	return 1;
+	
+}

@@ -15,6 +15,7 @@ struct IMG_PROCCESS_CONFIG
 
 
 int  resize_image(char* in_buff, size_t in_len, char* &out_buff, size_t &out_len, IMG_PROCCESS_CONFIG *config, bool remove_exif = false);
+int  get_img_size(char* in_buff, size_t in_len, int& width, int& height);
 
 
 

@@ -155,14 +155,20 @@ int on_request_set(const int fd, conn* c)
 		return -1;
 	}
 
+
+	int origin_width;
+	int origin_height;
+
+	int ret = get_img_size(content,rc,origin_width, origin_height);
+
 	//gen md5 key
 	string new_name = MD5(content, rc).toString();
 	cout<<"new name is "<<new_name<<endl;
 
 	//compression image and save as the primary
 	IMG_PROCCESS_CONFIG ipConf;
-	ipConf.out_height = 1024;
-	ipConf.out_width = 1024;
+	ipConf.out_height = std::min(1024,origin_height);
+	ipConf.out_width = std::min(1024,origin_height);
 	ipConf.keep_proportion = true;
 
 	char* new_img_buff;
