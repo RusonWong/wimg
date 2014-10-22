@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     url(r'^img/$', views.img, name = 'img'),
     url(r'^upload_page$', views.upload_page, name = 'upload_page'),
     url(r'^upload/$', views.upload, name = 'upload'),
+    url(r'^test_local/$', views.test_local, name = 'test_local'),
 )

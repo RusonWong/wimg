@@ -48,3 +48,8 @@ def img(request):
 	imgContent = wclient.getImage(fileKey,int(width),int(height))
 	response = HttpResponse(imgContent, content_type = 'image/jpeg')
 	return response
+
+def test_local(request):
+	content = getLocalFile("test.jpg");
+	response = HttpResponse(content, content_type = 'image/jpeg')
+	return response
