@@ -24,6 +24,10 @@ public:
 	string beansdbAddr;
 	int		beansdbPort;
 
+	int		storage_mode;
+
+	int 	use_memcached;
+
 public:
 	Config(){}
 	~Config(){}

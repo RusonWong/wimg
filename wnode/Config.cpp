@@ -61,5 +61,15 @@ void Config::load(string configPath)
        this->beansdbPort = (int)lua_tonumber(L, -1);
     lua_pop(L, 1);
 
+    lua_getglobal(L, "storage_mode");
+    if(lua_isnumber(L, -1))
+       this->storage_mode = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "use_memcached");
+    if(lua_isnumber(L, -1))
+       this->use_memcached = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
     lua_close(L);
 }

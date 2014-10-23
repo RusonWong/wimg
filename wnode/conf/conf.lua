@@ -11,3 +11,9 @@ memcached_port = 11211
 
 beansdb_addr = "127.0.0.1"
 beansdb_port = 7900
+
+--storage_mode: 1 for local, 2 for beansdb
+storage_mode = 1
+
+--use memcached
+use_memcached = 0

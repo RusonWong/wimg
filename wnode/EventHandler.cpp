@@ -9,7 +9,7 @@
 #include "LocalStorage.h"
 #include "LibeventThread.h"
 #include <iostream>
-
+#include "Config.h"
 #include "ImageUtil.h"
 #include "md5.h"
 
@@ -20,6 +20,9 @@ using namespace std;
 //without protobuf
 #ifndef USING_PROTOBUFF
 #endif
+
+
+extern Config globalConfig;
 
 //with protobuff version
 #ifdef USING_PROTOBUFF
@@ -55,30 +58,52 @@ int on_request_get(const int fd, conn* c)
 	
 	std::string fileName(buff,imageid_len);
 	
-	int cache_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get(buff, imageid_len, buffptr, len);
-	if(cache_rt == 0){
-	//	LocalStorage* plocalStorage = LocalStorage::getInstance();
-		
-		if(!((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get(buff, imageid_len, buffptr, len))
+	int got_file = 0;
+
+	if( globalConfig.use_memcached)
+	{
+		got_file = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get(buff, imageid_len, buffptr, len);
+	}
+
+	if(got_file == 0){
+
+		if( globalConfig.storage_mode == 2)
 		{
-			cout<<"can not find file "<<fileName<<"\n";
-			response.set_rspcode(REQ_FAILED);
-			response.set_errcode(ERR_FILE_NOT_FOUND);
-			w_send_pb(fd, &response);
-			return 0;
+			int c_set_ret = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get(buff, imageid_len, buffptr, len);
+			if( c_set_ret == 0)
+			{
+				cout<<"can not find file "<<fileName<<"from beansdb\n";
+				response.set_rspcode(REQ_FAILED);
+				response.set_errcode(ERR_FILE_NOT_FOUND);
+				w_send_pb(fd, &response);
+				return 0;
+			}
+			
 		}
-		else
+		else if(globalConfig.storage_mode == 1)
 		{
-			cout<<"got file from beansdb\n";
+			LocalStorage* ps = LocalStorage::getInstance();
+			int  ret = ps->get_file(fileName, buffptr, len);
+			if( ret == 0)
+			{
+				cout<<"can not find file "<<fileName<<" from LocalStorage\n";
+				response.set_rspcode(REQ_FAILED);
+				response.set_errcode(ERR_FILE_NOT_FOUND);
+				w_send_pb(fd, &response);
+				return 0;
+			}
 		}
 
 		//set cache
-		int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, imageid_len, buffptr, len);
-		if(cache_set_rt)
+		if(globalConfig.use_memcached)
 		{
-			//printf("set cache of %s done\n",buff);
-			cout<<"set cache of "<<fileName<<" done\n";
+			int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, imageid_len, buffptr, len);
+			if(cache_set_rt)
+			{
+				cout<<"set cache of "<<fileName<<" done\n";
+			}
 		}
+
 	}
 	else{
 		//printf("hit cache of %s\n", buff);
@@ -179,44 +204,63 @@ int on_request_set(const int fd, conn* c)
 	}
 
 	/////////save proccessed image to cache and storage////////////
-	int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
-	if( cache_set_rt )
+
+	int cache_set_rt;
+	if(globalConfig.use_memcached == 1)
 	{
-		cout<<"cache of "<<filePath<<" set success\n";
-	}
-	else
-	{
-		cout<<"cache of "<<filePath<<" set failed\n";
+		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
+		if( cache_set_rt )
+		{
+			cout<<"cache of "<<filePath<<" set success\n";
+		}
+		else
+		{
+			cout<<"cache of "<<filePath<<" set failed\n";
+		}
 	}
 	
-	cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
-	if( cache_set_rt )
+	if( globalConfig.storage_mode == 2)
 	{
-		cout<<"save "<<filePath<<" to beansdb success\n";
+		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
+		if( cache_set_rt )
+		{
+			cout<<"save "<<filePath<<" to beansdb success\n";
+		}
+		else
+		{
+			cout<<"save "<<filePath<<" to beansdb failed\n";
+		}
 	}
-	else
-	{
-		cout<<"save "<<filePath<<" to beansdb failed\n";
-	}
+	else if(globalConfig.storage_mode == 1){
+		int ret = plocalStorage->save_file(new_img_buff, new_img_len, new_name);
+		if(ret == 1)
+		{
+			cout<<"save "<<filePath<<" to local success\n";
+		}
 
-	//plocalStorage->save_file(new_img_buff, new_img_len, new_name);
+	}
 
 	///////////save origin image to storage/////////////
 	string origin_image_name = new_name + ".origin";
 	origin_image_name = MD5(origin_image_name).toString();
 	cout<<"origin name is "<<origin_image_name<<endl;
-	//plocalStorage->save_file(content, rc, origin_image_name);
 
-	cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
-	if( cache_set_rt )
+	if( globalConfig.storage_mode == 2)
 	{
-		cout<<"save origin "<<filePath<<" to beansdb success\n";
+		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
+		if( cache_set_rt )
+		{
+			cout<<"save origin "<<filePath<<" to beansdb success\n";
+		}
+		else
+		{
+			cout<<"save origin "<<filePath<<" to beansdb failed\n";
+		}
 	}
-	else
+	else if( globalConfig.storage_mode == 1)
 	{
-		cout<<"save origin "<<filePath<<" to beansdb failed\n";
+		plocalStorage->save_file(content, rc, origin_image_name);
 	}
-
 
 	///sned response/////
 	response.set_rspcode(REQ_SUCCESS);
