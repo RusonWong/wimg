@@ -71,16 +71,7 @@ int on_request_get(const int fd, conn* c)
 		{
 			cout<<"got file from beansdb\n";
 		}
-		/*if(plocalStorage->get_file(fileName, buffptr, len) == 0)
-		//{
-			//printf("can not find file %s\n", fileName);
-			cout<<"can not find file "<<fileName<<"\n";
-			response.set_rspcode(REQ_FAILED);
-			response.set_errcode(ERR_FILE_NOT_FOUND);
-			w_send_pb(fd, &response);
-			return 0;
-		//}
-		*/
+
 		//set cache
 		int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, imageid_len, buffptr, len);
 		if(cache_set_rt)
@@ -107,6 +98,12 @@ int on_request_get(const int fd, conn* c)
 	int p_ret = resize_image(buffptr,len,new_img_buff,new_img_len,&ipConf);
 	//TODO  handle error
 
+	if(p_ret == 0)
+	{
+		new_img_len = len;
+		new_img_buff = buffptr;
+	}
+
 	response.set_rspcode(REQ_SUCCESS);
 	w_send_pb(fd, &response);
 
@@ -114,8 +111,8 @@ int on_request_get(const int fd, conn* c)
 	int wc = w_send(fd, new_img_buff, new_img_len);
 	//clean mem
 	delete new_img_buff;
-	delete buffptr;
-	//delete buff;
+	if(p_ret == 1)
+		delete buffptr;
 	return 1;
 }
 
@@ -210,7 +207,6 @@ int on_request_set(const int fd, conn* c)
 	cout<<"origin name is "<<origin_image_name<<endl;
 	//plocalStorage->save_file(content, rc, origin_image_name);
 
-
 	cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
 	if( cache_set_rt )
 	{
@@ -220,7 +216,6 @@ int on_request_set(const int fd, conn* c)
 	{
 		cout<<"save origin "<<filePath<<" to beansdb failed\n";
 	}
-
 
 
 	///sned response/////
