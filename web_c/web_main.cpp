@@ -27,7 +27,7 @@ reply_error(evhtp_request_t* req, char* msg)
 {
     evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
     evbuffer_add_printf(req->buffer_out,"%s", msg);
-    evhtp_send_reply(req, EVHTP_RES_OK);
+    evhtp_send_reply(req, EVHTP_RES_ERROR);
 }
 
 
@@ -257,11 +257,6 @@ get_img_cb(evhtp_request_t* req, void* a)
     const char* str_w = evhtp_kv_find(params, "w");
     const char* str_h = evhtp_kv_find(params, "h");
 
-/*
-    cout<<"k:"<<str_k<<endl;
-    cout<<"w:"<<str_w<<endl;
-    cout<<"h:"<<str_h<<endl;
-*/
     if(str_k == NULL)
     {
         reply_error(req, "img id is not given");
@@ -313,8 +308,8 @@ get_img_cb(evhtp_request_t* req, void* a)
     else
     {
         evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
-        evbuffer_add_printf(req->buffer_out,"%s", "error get img");
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evbuffer_add_printf(req->buffer_out,"%s", "404 NOT FOUND!");
+        evhtp_send_reply(req, EVHTP_RES_NOTFOUND);
     }
 
 }
@@ -336,8 +331,8 @@ void test_cb(evhtp_request_t* req, void* a)
     else
     {
         evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
-        evbuffer_add_printf(req->buffer_out,"%s", "error get img");
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evbuffer_add_printf(req->buffer_out,"%s", "404 NOT FOUND!");
+        evhtp_send_reply(req, EVHTP_RES_NOTFOUND);
     }
 
 }
