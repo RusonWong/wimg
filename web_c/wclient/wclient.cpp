@@ -110,7 +110,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     int    nodePort;
     if(get_proccess_node(md5, nodeAddr, nodePort) == 0)
     {
-        cout<<"can not get node to proccess this req";
+        cout<<"can not get node to proccess this req\n";
         return -1;
     }
 
@@ -118,7 +118,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     int nodeSock = do_connect(nodeAddr.c_str(),nodePort);
     if (nodeSock < 0)
     {
-       cout<<"conenction  to master error\n";
+       cout<<"conenction to master error\n";
        return -1;
     }
 
@@ -163,6 +163,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     if(response.rspcode() == REQ_FAILED)
     {
         printf("ERROR GET IMAGE\n");
+        close(nodeSock);
         return -1;
     }
     delete cbuf;
@@ -173,6 +174,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     if(content_len_t == 0)
     {
         printf("connection error when recv img content\n");
+        close(nodeSock);
         return -1;
     }
 

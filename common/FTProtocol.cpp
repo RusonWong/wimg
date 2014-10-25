@@ -33,7 +33,7 @@ int w_recv(const int fd, char* &content)
 	int rc = read( fd, content_len_buff, 10);
 	if(rc != 10)
 	{
-		printf("error when read content size\n");
+		printf("error when read content size, rc is %d\n",rc);
 		return 0;
 	}
 	int content_len = atoi(content_len_buff);

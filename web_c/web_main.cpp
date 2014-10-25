@@ -299,6 +299,7 @@ get_img_cb(evhtp_request_t* req, void* a)
 
     if(ret == 1)
     {
+        cout<<"req proccess success, ret len is:"<<content_len<<endl;
         evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "image/jpeg", 0, 0));
         evbuffer_add(req->buffer_out,content, content_len);
         evhtp_send_reply(req, EVHTP_RES_OK);
@@ -307,6 +308,7 @@ get_img_cb(evhtp_request_t* req, void* a)
     }
     else
     {
+        cout<<"req proccess failed\n";
         evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
         evbuffer_add_printf(req->buffer_out,"%s", "404 NOT FOUND!");
         evhtp_send_reply(req, EVHTP_RES_NOTFOUND);
