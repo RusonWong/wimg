@@ -10,7 +10,7 @@ int get_local_file(std::string file_path, char* &buffptr,size_t& len)
     ifstream ifile(file_path.c_str());
     if (ifile.fail())
     {
-        std::cout<<("No file " + file_path + " found");
+        std::cout<<("Error open " + file_path + "\n");
         return 0;
     }
     else{
