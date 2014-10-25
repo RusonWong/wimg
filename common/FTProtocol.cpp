@@ -18,10 +18,18 @@ int w_send(int fd,const char* content, size_t len)
 	int wc = write(fd, bufftemp, 10);
 	if(wc <= 0)
 	{
+		close(fd);
 		return 0;
 	}
 
 	wc = send(fd, content, len, MSG_WAITALL);
+	if(wc < 0)
+	{
+		close(fd);
+		return 0;
+	}
+
+	return 1;
 	printf("actual sent size %d\n", wc);
 }
 
@@ -34,6 +42,7 @@ int w_recv(const int fd, char* &content)
 	if(rc != 10)
 	{
 		printf("error when read content size, rc is %d\n",rc);
+		close(fd);
 		return 0;
 	}
 	int content_len = atoi(content_len_buff);
@@ -43,6 +52,10 @@ int w_recv(const int fd, char* &content)
 
 	rc = recv(fd, content, content_len, MSG_WAITALL);
 	printf("actual got total: %d\n",rc);
+	if( rc < 0)
+	{
+		close(fd);
+	}
 	return rc;
 }
 

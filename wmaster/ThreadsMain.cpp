@@ -10,6 +10,8 @@
 #include "Config.h"
 #include <assert.h>
 
+#include "EventHandler.h"
+
 
 extern Config globalConfig;
 
@@ -20,6 +22,7 @@ static struct event_base *main_base;
 static int last_thread = -1;
 static int total_threads = 1;
 WorkerThreads *workerThreads;
+static pthread_mutex_t thread_lock=PTHREAD_MUTEX_INITIALIZER;
 
 void thread_init(int nthreads);
 void base_event_handler(const int fd, const short which,void* arg);
@@ -34,6 +37,8 @@ void thread_init(int nthreads)
 void dispatch_conn_new(int sfd)
 {
 	printf("dispatch_conn_new called\n");	
+	
+	pthread_mutex_lock(&thread_lock);
 	EQ_ITEM *item=eqi_new();						
 	int tid=(last_thread+1)%total_threads;
 	LIBEVENT_THREAD *thread=workerThreads->threads+tid;
@@ -41,7 +46,8 @@ void dispatch_conn_new(int sfd)
 	last_thread=tid;
 	item->sfd=sfd;											//connected fd
 	item->event_flags=EV_READ | EV_PERSIST;
-	
+	pthread_mutex_unlock(&thread_lock);
+
 	eq_push(thread->new_conn_queue,item);					//push conn to working thread
 	int wc=write(thread->notify_send_fd," ",1);				//write 1 byte to notify thread
 }
@@ -55,6 +61,8 @@ void base_event_handler(const int fd, const short which,void* arg)
     int sfd = accept(fd, (struct sockaddr *)&sin, &slen);
     printf("accept fd is %d\n", sfd);
 	dispatch_conn_new(sfd);
+
+	//single_thread_event_handler(fd, which);
 }
 
 int start_server(int nThreads)

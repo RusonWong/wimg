@@ -64,6 +64,7 @@ int get_proccess_node(string md5, string& addr, int &port)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() to master failure!\n");
+        close(masterSock);
         return 0;
     }
     
@@ -75,6 +76,7 @@ int get_proccess_node(string md5, string& addr, int &port)
     if((cLen < 0)||(cLen == 0))
     {
         printf("send pb failure!\n");
+        close(masterSock);
         return 0;
     }
 
@@ -84,6 +86,7 @@ int get_proccess_node(string md5, string& addr, int &port)
     if(rc == 0)
     {
         printf("connection error, got size 0\n");
+        close(masterSock);
         return 0;
     }
     
@@ -95,6 +98,7 @@ int get_proccess_node(string md5, string& addr, int &port)
 
     cout<<"proccesing node:"<<addr<<":"<<port<<endl;
     delete cbuf;
+    close(masterSock);
     return 1;
 }
 
@@ -127,6 +131,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() to master failure!\n");
+        close(nodeSock);
         return -1;
     }
     

@@ -172,6 +172,13 @@ void event_handler(const int fd,const short which,void *arg)
 }
 
 
+void single_thread_event_handler(const int fd, const short which)
+{
+	int handle_ret = on_request_arrive(fd,NULL);
+	close(fd);
+}
+
+
 
 
 
