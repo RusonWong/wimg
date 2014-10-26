@@ -31,12 +31,20 @@ void on_req_set(const int fd)
 		return;
 	}
 
-	WNode node = WNodeManager::getInstance()->dispatchRequest(reqSet.md5());
+	WNode* node = WNodeManager::getInstance()->dispatchRequest(reqSet.md5());
 
 	NodeInfo ninfo;
-	ninfo.set_nodeaddr(node.nodeIP);
-	ninfo.set_nodeport(node.nodePort);
-
+	if(node != NULL)
+	{
+		ninfo.set_nodeaddr(node->nodeIP);
+		ninfo.set_nodeport(node->nodePort);
+	}
+	else
+	{
+		ninfo.set_nodeaddr("-1");
+		ninfo.set_nodeport(-1);
+	}
+	
 	int sl = w_send_pb(fd, &ninfo);
 
 	delete req_buff;

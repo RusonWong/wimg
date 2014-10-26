@@ -89,14 +89,20 @@ int WNodeManager::removeNode(string addr, int port)
 
 ///using consistent hash to dispatch requst
 //key: md5 of some image
-WNode WNodeManager::dispatchRequest(string key)
+WNode* WNodeManager::dispatchRequest(string key)
 {
 	//TODO, here just using a normal hash
 	int nodeCount = this->runningNodes.size();
+
+	if(nodeCount == 0)
+	{
+		return NULL;
+	}
+	
 	int rkey = (int)key[0];
 	int p = rkey%nodeCount;
 
-	return *runningNodes[p];
+	return runningNodes[p];
 }
 
 WNode* WNodeManager::findNode(string key)

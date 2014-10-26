@@ -56,7 +56,7 @@ public:
 	int removeNode(string key);
 	int removeNode(string addr, int port);
 
-	WNode dispatchRequest(string key);
+	WNode* dispatchRequest(string key);
 };
 
 #endif

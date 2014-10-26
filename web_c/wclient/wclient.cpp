@@ -82,23 +82,25 @@ int get_proccess_node(string md5, string& addr, int &port)
 
     char* cbuf;
     int rc = w_recv(masterSock, cbuf);
-    
+    close(masterSock);
+
     if(rc == 0)
     {
         printf("connection error, got size 0\n");
-        close(masterSock);
         return 0;
     }
     
     NodeInfo nodeInfo;
     nodeInfo.ParseFromArray(cbuf, rc);
-    
+    delete cbuf;
+
     addr = nodeInfo.nodeaddr();
     port = nodeInfo.nodeport();
-
     cout<<"proccesing node:"<<addr<<":"<<port<<endl;
-    delete cbuf;
-    close(masterSock);
+    if(port == -1)
+    {
+        return 0;
+    }
     return 1;
 }
 

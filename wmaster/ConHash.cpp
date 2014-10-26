@@ -80,7 +80,8 @@ ConHashNode* ConHash::hash2Node(string key)
 			if(v < vNodeList[mid]->getHashValue())
 			{
 				right = mid;
-			}else
+			}
+			else
 			{
 				left = mid;
 			}
