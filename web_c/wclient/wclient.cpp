@@ -208,7 +208,7 @@ int upload_img(char* fileContent, size_t fileLen, string& ret_img_id)
     int    nodePort;
     if(get_proccess_node(img_md5, nodeAddr, nodePort) == 0)
     {
-        cout<<"can not get node to proccess this req";
+        cout<<"can not get node to proccess this req\n";
         return -1;
     }
 

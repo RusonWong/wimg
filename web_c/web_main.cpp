@@ -165,15 +165,19 @@ int multipart_parse(evhtp_request_t* req, char* buff, size_t buff_len, char* con
     string img_key;
     int ret = upload_img(content_begin,content_len, img_key);
 
+    free(boundaryPattern);
     if(ret == 1)
     {
         cout<<"new img key is:"<<img_key<<endl;
         img_id = img_key;
+        return 1;
+    }
+    else
+    {
+        return -1;
     }
 
-    free(boundaryPattern);
-
-    return 1;
+    
     //printStr(content_begin,0 , img_len);
     //write_local_file("img.jpg",content_begin, content_len);
 }
@@ -232,7 +236,7 @@ upload_cb(evhtp_request_t* req, void* a)
     {
         evhtp_headers_add_header(req->headers_out, evhtp_header_new("Content-Type", "text/html", 0, 0));
         evbuffer_add_printf(req->buffer_out,"%s", "upload failed!");
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_ERROR);
     }
 
     free(buff);
