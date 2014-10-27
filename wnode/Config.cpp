@@ -71,5 +71,10 @@ void Config::load(string configPath)
        this->use_memcached = (int)lua_tonumber(L, -1);
     lua_pop(L, 1);
 
+    lua_getglobal(L, "save_new");
+    if(lua_isnumber(L, -1))
+       this->save_new = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
     lua_close(L);
 }

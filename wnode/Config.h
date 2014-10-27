@@ -28,6 +28,8 @@ public:
 
 	int 	use_memcached;
 
+	int 	save_new;
+
 public:
 	Config(){}
 	~Config(){}

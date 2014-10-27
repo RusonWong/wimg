@@ -17,3 +17,6 @@ storage_mode = 1
 
 --use memcached
 use_memcached = 0
+
+--save proccessed file
+save_new = 1

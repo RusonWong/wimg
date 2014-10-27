@@ -12,6 +12,7 @@
 #include "Config.h"
 #include "ImageUtil.h"
 #include "md5.h"
+#include "common_utils.h"
 
 using namespace std;
 
@@ -27,6 +28,102 @@ extern Config globalConfig;
 //with protobuff version
 #ifdef USING_PROTOBUFF
 #include "WPB.pb.h"
+
+
+//get image that is proccessed
+int get_proccessed_file(conn* c, string temp_key, char* &retbuff, size_t &ret_len)
+{
+	
+	int got_file = 0;
+	if( globalConfig.use_memcached)
+	{
+		got_file = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
+	}
+	if(got_file == 0){
+		//benasdb
+		if( globalConfig.storage_mode == 2)
+		{
+			int c_set_ret = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
+			if( c_set_ret == 0)
+			{
+				cout<<"can not find file "<<temp_key<<" from beansdb\n";
+				return 0;
+			}
+			else
+			{
+				cout<<"find file "<<temp_key<<" from beansdb\n";
+			}
+			
+		}
+		//local
+		else if(globalConfig.storage_mode == 1)
+		{
+			LocalStorage* ps = LocalStorage::getInstance();
+			int  ret = ps->get_file(temp_key, retbuff, ret_len);
+			if( ret == 0)
+			{
+				cout<<"can not find file "<<temp_key<<" from LocalStorage\n";
+				return 0;
+			}
+			else
+			{
+				cout<<"find file "<<temp_key<<" from LocalStorage\n";
+			}
+		}
+	}
+	else
+	{
+		cout<<"hit cache of "<<temp_key<<endl;
+	}
+
+	return 1;
+}
+
+
+int save_proccessed_file(conn* c, string temp_key, char* filecontent, size_t content_len)
+{
+	int cache_set_rt;
+	if(globalConfig.use_memcached == 1)
+	{
+		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)temp_key.c_str(), temp_key.length(), filecontent, content_len);
+		if( cache_set_rt )
+		{
+			cout<<"cache of "<<temp_key<<" set success\n";
+		}
+		else
+		{
+			cout<<"cache of "<<temp_key<<" set failed\n";
+		}
+	}
+	
+	if( globalConfig.storage_mode == 2)
+	{
+		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)temp_key.c_str(), temp_key.length(), filecontent, content_len);
+		if( cache_set_rt )
+		{
+			cout<<"save "<<temp_key<<" to beansdb success\n";
+		}
+		else
+		{
+			cout<<"save "<<temp_key<<" to beansdb failed\n";
+		}
+	}
+	else if(globalConfig.storage_mode == 1){
+		LocalStorage* plocalStorage = LocalStorage::getInstance();
+		int ret = plocalStorage->save_file(filecontent, content_len, temp_key);
+		if(ret == 1)
+		{
+			cout<<"save "<<temp_key<<" to local success\n";
+		}
+		else
+		{
+			cout<<"save "<<temp_key<<" to local failed\n";
+		}
+	}
+
+	return 1;
+}
+
 
 int on_request_get(const int fd, conn* c)
 {
@@ -53,10 +150,31 @@ int on_request_get(const int fd, conn* c)
 	size_t imageid_len = req.imageid().length();
 	char* buff = (char*)req.imageid().c_str();
 
+	std::string fileName(buff,imageid_len);
+
 	char* buffptr = NULL;
 	size_t len = 0;
+	//////////////////////try get proccessed file//////////////////////
+
+	int temp_file_got = 0;
+	if( globalConfig.save_new == 1 && req.width() != -1)
+	{
+		string temp_key = fileName + ":" + witoa(req.width()) + ":" + witoa(req.height());
+		temp_file_got = get_proccessed_file(c, temp_key, buffptr, len);
+
+		if(temp_file_got == 1)
+		{
+			response.set_rspcode(REQ_SUCCESS);
+			w_send_pb(fd, &response);
+
+			//send image buff
+			int wc = w_send(fd, buffptr, len);
+			return 1;
+		}
+	}
+
+	////////////////////get file and resize start/////////////////////
 	
-	std::string fileName(buff,imageid_len);
 	
 	int got_file = 0;
 
@@ -113,21 +231,40 @@ int on_request_get(const int fd, conn* c)
 	//printf("find file %s, len %d\n",buff,len);
 	cout<<"get content of "<<fileName<<",len is "<<len<<endl;
 
-	//proccess image
-	IMG_PROCCESS_CONFIG ipConf;
-	ipConf.out_height = req.height();
-	ipConf.out_width = req.width();
-	ipConf.keep_proportion = req.keep_proportion();
+	char* new_img_buff = buffptr;
+	size_t new_img_len = len;
 
-	char* new_img_buff;
-	size_t new_img_len;
-	int p_ret = resize_image(buffptr,len,new_img_buff,new_img_len,&ipConf);
-	//TODO  handle error
-
-	if(p_ret == 0)
+	if( req.width() != -1)
 	{
-		new_img_len = len;
-		new_img_buff = buffptr;
+		//proccess image
+		IMG_PROCCESS_CONFIG ipConf;
+		ipConf.out_height = req.height();
+		ipConf.out_width = req.width();
+		ipConf.keep_proportion = req.keep_proportion();
+
+		int p_ret = resize_image(buffptr,len,new_img_buff,new_img_len,&ipConf);
+
+		if(p_ret == 0)
+		{
+			new_img_len = len;
+			new_img_buff = buffptr;
+		}
+		else
+		{
+			if(globalConfig.save_new == 1)
+			{
+				string temp_key = fileName + ":" + witoa(req.width()) + ":" + witoa(req.height());
+				int s_ret = save_proccessed_file(c, temp_key, new_img_buff, new_img_len);
+				if(s_ret == 1)
+				{
+					cout<<"save "<<temp_key<<" success"<<endl;
+				}
+				else
+				{
+					cout<<"save "<<temp_key<<" failed"<<endl;
+				}
+			}
+		}
 	}
 
 	response.set_rspcode(REQ_SUCCESS);
@@ -136,9 +273,10 @@ int on_request_get(const int fd, conn* c)
 	//send image buff
 	int wc = w_send(fd, new_img_buff, new_img_len);
 	//clean mem
-	delete new_img_buff;
-	if(p_ret == 1)
-		delete buffptr;
+	if(buffptr != new_img_buff)
+		delete new_img_buff;
+	
+	delete buffptr;
 	return 1;
 }
 
@@ -151,7 +289,7 @@ int on_request_get(const int fd, conn* c)
 int on_request_set(const int fd, conn* c)
 {	
 	ReqResponse response;
-	LocalStorage* plocalStorage = LocalStorage::getInstance();
+	
 
 	//get req body
 	char* req_buff;
@@ -233,6 +371,7 @@ int on_request_set(const int fd, conn* c)
 		}
 	}
 	else if(globalConfig.storage_mode == 1){
+		LocalStorage* plocalStorage = LocalStorage::getInstance();
 		int ret = plocalStorage->save_file(new_img_buff, new_img_len, new_name);
 		if(ret == 1)
 		{
@@ -260,6 +399,7 @@ int on_request_set(const int fd, conn* c)
 	}
 	else if( globalConfig.storage_mode == 1)
 	{
+		LocalStorage* plocalStorage = LocalStorage::getInstance();
 		plocalStorage->save_file(content, rc, origin_image_name);
 	}
 
