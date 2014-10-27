@@ -66,7 +66,7 @@ int on_request_get(const int fd, conn* c)
 	}
 
 	if(got_file == 0){
-
+		//benasdb
 		if( globalConfig.storage_mode == 2)
 		{
 			int c_set_ret = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get(buff, imageid_len, buffptr, len);
@@ -80,6 +80,7 @@ int on_request_get(const int fd, conn* c)
 			}
 			
 		}
+		//local
 		else if(globalConfig.storage_mode == 1)
 		{
 			LocalStorage* ps = LocalStorage::getInstance();

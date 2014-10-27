@@ -364,8 +364,6 @@ main(int argc, char ** argv) {
     evhtp_set_cb(htp, "/upload", upload_cb, NULL);
     evhtp_set_cb(htp, "/test", test_cb, (void*)"simple");
 
-
-
     evhtp_set_gencb(htp, gen_cb, NULL);
 
 
