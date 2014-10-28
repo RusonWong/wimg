@@ -30,6 +30,8 @@ public:
 
 	int 	save_new;
 
+	int 	use_single_thread;
+
 public:
 	Config(){}
 	~Config(){}

@@ -76,5 +76,10 @@ void Config::load(string configPath)
        this->save_new = (int)lua_tonumber(L, -1);
     lua_pop(L, 1);
 
+    lua_getglobal(L, "use_single_thread");
+    if(lua_isnumber(L, -1))
+       this->use_single_thread = (int)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
     lua_close(L);
 }

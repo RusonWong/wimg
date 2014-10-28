@@ -1,7 +1,7 @@
 import os
 import sys
 
-url = "http://202.120.40.189:8081/test"
+url = "http://202.120.40.189:8081/img?k=076e3caed758a1c18c91a0e9cae3368f&w=300&h=300"
 concurrent_levels = [10,20,30,40,50,100,200,300,400,500,1000]
 
 

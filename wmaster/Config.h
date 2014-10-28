@@ -13,6 +13,8 @@ public:
 	int	    masterPort;
 
 	int 	threadsCount;
+
+	int 	use_single_thread;
 public:
 	Config(){}
 	~Config(){}

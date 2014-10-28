@@ -102,8 +102,8 @@ void handle_connection(const int sfd, struct event_base* base)
 	}
 }
 
-void thread_libevent_process(int fd,short which,void *arg)					//处理函数，即当主线程通知workerThread时，主线程会插入一个item到某个thread的queue中，queue是一个工具类
-																				//workerThread将item pop出来并封装为conn，封装期间就建立了和item所指向的对象的联系，也使用libevent完成
+void thread_libevent_process(int fd,short which,void *arg)					
+																			
 {
 	printf("thread_libevent_process called\n");
 	LIBEVENT_THREAD *me=(LIBEVENT_THREAD*)arg;

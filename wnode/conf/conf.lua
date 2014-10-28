@@ -20,3 +20,6 @@ use_memcached = 0
 
 --save proccessed file
 save_new = 1
+
+--use single thread
+use_single_thread = 1

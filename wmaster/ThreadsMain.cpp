@@ -38,7 +38,7 @@ void dispatch_conn_new(int sfd)
 {
 	printf("dispatch_conn_new called\n");	
 	
-	pthread_mutex_lock(&thread_lock);
+	//pthread_mutex_lock(&thread_lock);
 	EQ_ITEM *item=eqi_new();						
 	int tid=(last_thread+1)%total_threads;
 	LIBEVENT_THREAD *thread=workerThreads->threads+tid;
@@ -46,7 +46,7 @@ void dispatch_conn_new(int sfd)
 	last_thread=tid;
 	item->sfd=sfd;											//connected fd
 	item->event_flags=EV_READ | EV_PERSIST;
-	pthread_mutex_unlock(&thread_lock);
+	//pthread_mutex_unlock(&thread_lock);
 
 	eq_push(thread->new_conn_queue,item);					//push conn to working thread
 	int wc=write(thread->notify_send_fd," ",1);				//write 1 byte to notify thread
@@ -60,9 +60,12 @@ void base_event_handler(const int fd, const short which,void* arg)
     socklen_t slen = sizeof(struct sockaddr);
     int sfd = accept(fd, (struct sockaddr *)&sin, &slen);
     printf("accept fd is %d\n", sfd);
-	dispatch_conn_new(sfd);
+	
 
-	//single_thread_event_handler(fd, which);
+    if(globalConfig.use_single_thread == 1)
+		single_thread_event_handler(sfd, which);
+	else
+		dispatch_conn_new(sfd);
 }
 
 int start_server(int nThreads)

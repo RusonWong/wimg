@@ -11,6 +11,7 @@
 #include "Config.h"
 #include <signal.h>
 #include <wand/MagickWand.h>
+#include "EventHandler.h"
 
 #define LISTEN_BACKLOG 32
 
@@ -54,7 +55,12 @@ void base_event_handler(const int fd, const short which,void* arg)
     socklen_t slen = sizeof(struct sockaddr);
     int sfd = accept(fd, (struct sockaddr *)&sin, &slen);
     printf("accept fd is %d\n", sfd);
-	dispatch_conn_new(sfd);
+	
+
+	if(globalConfig.use_single_thread == 1)
+		single_thread_event_handler(sfd, which);
+	else
+		dispatch_conn_new(sfd);
 }
 
 static void sighandler(int signal) 

@@ -178,7 +178,7 @@ int on_request_get(const int fd, conn* c)
 	
 	int got_file = 0;
 
-	if( globalConfig.use_memcached)
+	if( globalConfig.use_memcached == 1)
 	{
 		got_file = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get(buff, imageid_len, buffptr, len);
 	}
@@ -214,7 +214,7 @@ int on_request_get(const int fd, conn* c)
 		}
 
 		//set cache
-		if(globalConfig.use_memcached)
+		if(globalConfig.use_memcached == 1)
 		{
 			int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, imageid_len, buffptr, len);
 			if(cache_set_rt)
@@ -462,6 +462,11 @@ void event_handler(const int fd,const short which,void *arg)
 }
 
 
+void single_thread_event_handler(const int fd, const short which)
+{
+	int handle_ret = on_request_arrive(fd,NULL);
+	close(fd);
+}
 
 
 
