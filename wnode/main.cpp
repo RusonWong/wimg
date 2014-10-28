@@ -3,15 +3,24 @@
 #include "WPB.pb.h"
 #include <string>
 #include "Config.h"
+#include "MCConnector.h"
 
 using namespace std;
 
 extern Config globalConfig;
+extern MCConnector global_memcached_mcc;
+extern MCConnector global_beansdb_mcc;
 
 void init()
 {
     globalConfig.load("./conf/conf.lua");
     cout<<globalConfig.localAddr<<"="<<globalConfig.port<<"="<<globalConfig.masterAddr<<"="<<globalConfig.masterPort<<endl;
+
+
+    global_memcached_mcc.init(globalConfig.memAddr, globalConfig.memPort, true);
+    //initial beansdb connector
+    global_beansdb_mcc.init(globalConfig.beansdbAddr, globalConfig.beansdbPort, false);
+
 }
 
 int register_to_master()

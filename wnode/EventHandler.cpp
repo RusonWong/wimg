@@ -13,6 +13,7 @@
 #include "ImageUtil.h"
 #include "md5.h"
 #include "common_utils.h"
+#include "MCConnector.h"
 
 using namespace std;
 
@@ -24,6 +25,9 @@ using namespace std;
 
 
 extern Config globalConfig;
+extern MCConnector global_memcached_mcc;
+extern MCConnector global_beansdb_mcc;
+
 
 //with protobuff version
 #ifdef USING_PROTOBUFF
@@ -31,19 +35,19 @@ extern Config globalConfig;
 
 
 //get image that is proccessed
-int get_proccessed_file(conn* c, string temp_key, char* &retbuff, size_t &ret_len)
+int get_proccessed_file(string temp_key, char* &retbuff, size_t &ret_len,  MCConnector* mc, MCConnector* bc)
 {
 	
 	int got_file = 0;
 	if( globalConfig.use_memcached)
 	{
-		got_file = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
+		got_file = mc->cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
 	}
 	if(got_file == 0){
 		//benasdb
 		if( globalConfig.storage_mode == 2)
 		{
-			int c_set_ret = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
+			int c_set_ret = bc->cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
 			if( c_set_ret == 0)
 			{
 				cout<<"can not find file "<<temp_key<<" from beansdb\n";
@@ -80,12 +84,12 @@ int get_proccessed_file(conn* c, string temp_key, char* &retbuff, size_t &ret_le
 }
 
 
-int save_proccessed_file(conn* c, string temp_key, char* filecontent, size_t content_len)
+int save_proccessed_file(string temp_key, char* filecontent, size_t content_len, MCConnector* mc, MCConnector* bc)
 {
 	int cache_set_rt;
 	if(globalConfig.use_memcached == 1)
 	{
-		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)temp_key.c_str(), temp_key.length(), filecontent, content_len);
+		cache_set_rt = mc->cache_set((char*)temp_key.c_str(), temp_key.length(), filecontent, content_len);
 		if( cache_set_rt )
 		{
 			cout<<"cache of "<<temp_key<<" set success\n";
@@ -98,7 +102,7 @@ int save_proccessed_file(conn* c, string temp_key, char* filecontent, size_t con
 	
 	if( globalConfig.storage_mode == 2)
 	{
-		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)temp_key.c_str(), temp_key.length(), filecontent, content_len);
+		cache_set_rt = bc->cache_set((char*)temp_key.c_str(), temp_key.length(), filecontent, content_len);
 		if( cache_set_rt )
 		{
 			cout<<"save "<<temp_key<<" to beansdb success\n";
@@ -125,7 +129,7 @@ int save_proccessed_file(conn* c, string temp_key, char* filecontent, size_t con
 }
 
 
-int on_request_get(const int fd, conn* c)
+int on_request_get(const int fd, MCConnector* memcached_connector, MCConnector* beansdb_connector)
 {
 	//get request
 	char *reqContent;
@@ -160,7 +164,7 @@ int on_request_get(const int fd, conn* c)
 	if( globalConfig.save_new == 1 && req.width() != -1)
 	{
 		string temp_key = fileName + ":" + witoa(req.width()) + ":" + witoa(req.height());
-		temp_file_got = get_proccessed_file(c, temp_key, buffptr, len);
+		temp_file_got = get_proccessed_file(temp_key, buffptr, len, memcached_connector, beansdb_connector);
 
 		if(temp_file_got == 1)
 		{
@@ -180,14 +184,14 @@ int on_request_get(const int fd, conn* c)
 
 	if( globalConfig.use_memcached == 1)
 	{
-		got_file = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_get(buff, imageid_len, buffptr, len);
+		got_file = memcached_connector->cache_get(buff, imageid_len, buffptr, len);
 	}
 
 	if(got_file == 0){
 		//benasdb
 		if( globalConfig.storage_mode == 2)
 		{
-			int c_set_ret = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_get(buff, imageid_len, buffptr, len);
+			int c_set_ret = beansdb_connector->cache_get(buff, imageid_len, buffptr, len);
 			if( c_set_ret == 0)
 			{
 				cout<<"can not find file "<<fileName<<"from beansdb\n";
@@ -216,7 +220,7 @@ int on_request_get(const int fd, conn* c)
 		//set cache
 		if(globalConfig.use_memcached == 1)
 		{
-			int cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set(buff, imageid_len, buffptr, len);
+			int cache_set_rt = memcached_connector->cache_set(buff, imageid_len, buffptr, len);
 			if(cache_set_rt)
 			{
 				cout<<"set cache of "<<fileName<<" done\n";
@@ -254,7 +258,7 @@ int on_request_get(const int fd, conn* c)
 			if(globalConfig.save_new == 1)
 			{
 				string temp_key = fileName + ":" + witoa(req.width()) + ":" + witoa(req.height());
-				int s_ret = save_proccessed_file(c, temp_key, new_img_buff, new_img_len);
+				int s_ret = save_proccessed_file(temp_key, new_img_buff, new_img_len, memcached_connector, beansdb_connector);
 				if(s_ret == 1)
 				{
 					cout<<"save "<<temp_key<<" success"<<endl;
@@ -286,7 +290,7 @@ int on_request_get(const int fd, conn* c)
 */
 //int LocalStorage::save_file(const char* buff, size_t file_size, std::string file_name)
 //handle upload a image document request
-int on_request_set(const int fd, conn* c)
+int on_request_set(const int fd, MCConnector* memcached_connector, MCConnector* beandb_connector)
 {	
 	ReqResponse response;
 	
@@ -347,7 +351,7 @@ int on_request_set(const int fd, conn* c)
 	int cache_set_rt;
 	if(globalConfig.use_memcached == 1)
 	{
-		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->mcc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
+		cache_set_rt = memcached_connector->cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
 		if( cache_set_rt )
 		{
 			cout<<"cache of "<<filePath<<" set success\n";
@@ -360,7 +364,7 @@ int on_request_set(const int fd, conn* c)
 	
 	if( globalConfig.storage_mode == 2)
 	{
-		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
+		cache_set_rt =  beandb_connector->cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
 		if( cache_set_rt )
 		{
 			cout<<"save "<<filePath<<" to beansdb success\n";
@@ -387,7 +391,7 @@ int on_request_set(const int fd, conn* c)
 
 	if( globalConfig.storage_mode == 2)
 	{
-		cache_set_rt = ((LIBEVENT_THREAD*)c->thread_param)->bdbc.cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
+		cache_set_rt = beandb_connector->cache_set((char*)origin_image_name.c_str(), origin_image_name.length(), content, rc);
 		if( cache_set_rt )
 		{
 			cout<<"save origin "<<filePath<<" to beansdb success\n";
@@ -419,7 +423,7 @@ int on_request_set(const int fd, conn* c)
 }
 #endif
 
-int on_request_arrive(const int fd, conn* c)
+int on_request_arrive(const int fd, MCConnector* memcached_connector, MCConnector* beansdb_connector)
 {
 	//GET METHOD
 	char* method;
@@ -433,12 +437,12 @@ int on_request_arrive(const int fd, conn* c)
 	if(method[0] == METHOD_GET)
 	{
 		printf("method: get \n");
-		return on_request_get(fd, c);
+		return on_request_get(fd, memcached_connector, beansdb_connector);
 	}
 	else if(method[0] == METHOD_SET)
 	{
 		printf("method: set \n");
-		return on_request_set(fd, c);
+		return on_request_set(fd,  memcached_connector, beansdb_connector);
 	}
 	printf("method: not known \n");
 
@@ -450,7 +454,9 @@ int on_request_arrive(const int fd, conn* c)
 void event_handler(const int fd,const short which,void *arg)
 {
 	conn* c = (conn*)arg;
-	int handle_ret = on_request_arrive(fd, c);
+	MCConnector* m_connector = &(((LIBEVENT_THREAD*)c->thread_param)->mcc);
+	MCConnector* b_connector = &(((LIBEVENT_THREAD*)c->thread_param)->bdbc);
+	int handle_ret = on_request_arrive(fd, m_connector, b_connector);
 	printf("connection closed\n");
 	close(fd);
 	event_del(&(c->event));
@@ -464,7 +470,8 @@ void event_handler(const int fd,const short which,void *arg)
 
 void single_thread_event_handler(const int fd, const short which)
 {
-	int handle_ret = on_request_arrive(fd,NULL);
+	cout<<"single_thread_event_handler called"<<endl;
+	int handle_ret = on_request_arrive(fd,&global_memcached_mcc, &global_beansdb_mcc);
 	close(fd);
 }
 

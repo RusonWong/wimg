@@ -7,6 +7,10 @@
 using namespace std;
 
 
+
+MCConnector global_memcached_mcc;
+MCConnector global_beansdb_mcc;
+
 int MCConnector::init(string addr, int port, bool for_cache)
 {
 
