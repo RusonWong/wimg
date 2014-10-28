@@ -148,8 +148,10 @@ int on_request_get(const int fd, MCConnector* memcached_connector, MCConnector* 
 		response.set_rspcode(REQ_FAILED);
 		response.set_errcode(ERR_INVALID_PARAMS);
 		w_send_pb(fd, &response);
+		delete reqContent;
 		return 0;
 	}
+	delete reqContent;
 
 	size_t imageid_len = req.imageid().length();
 	char* buff = (char*)req.imageid().c_str();
@@ -173,6 +175,7 @@ int on_request_get(const int fd, MCConnector* memcached_connector, MCConnector* 
 
 			//send image buff
 			int wc = w_send(fd, buffptr, len);
+			delete buffptr;
 			return 1;
 		}
 	}
@@ -463,7 +466,6 @@ void event_handler(const int fd,const short which,void *arg)
 
 	if(conn_add_to_freelist(c))
 			conn_free(c);
-		
 	return;
 }
 

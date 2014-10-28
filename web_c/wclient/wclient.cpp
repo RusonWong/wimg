@@ -42,6 +42,7 @@ int do_connect(const char* addr, int port)
     if(connect(cClient, (struct sockaddr*)&cli, sizeof(cli)) < 0)
     {
         printf("connect() failure!\n");
+        close(cClient);
         return -1;
     }
 
@@ -87,6 +88,7 @@ int get_proccess_node(string md5, string& addr, int &port)
     if(rc == 0)
     {
         printf("connection error, got size 0\n");
+        close(masterSock);
         return 0;
     }
     
@@ -101,6 +103,7 @@ int get_proccess_node(string md5, string& addr, int &port)
     {
         return 0;
     }
+    close(masterSock);
     return 1;
 }
 
@@ -124,7 +127,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     int nodeSock = do_connect(nodeAddr.c_str(),nodePort);
     if (nodeSock < 0)
     {
-       cout<<"conenction to master error\n";
+       cout<<"conenction to proccess node error\n";
        return -1;
     }
 
@@ -153,6 +156,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     if((cLen < 0)||(cLen == 0))
     {
         printf("send() failure!\n");
+        close(nodeSock);
         return -1;
     }
 
@@ -162,6 +166,7 @@ int get_img(string md5, int width, int height, char* &content, size_t & content_
     if(rc == 0)
     {
         printf("connection error, got size 0\n");
+        close(nodeSock);
         return -1;
     }
     
