@@ -16,7 +16,7 @@ beansdb_port = 7900
 storage_mode = 1
 
 --use memcached
-use_memcached = 0
+use_memcached = 1
 
 --save proccessed file
 save_new = 1

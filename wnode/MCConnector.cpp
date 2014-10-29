@@ -44,12 +44,12 @@ int MCConnector::init(string addr, int port, bool for_cache)
     cout<<"MEMCACHED_SUCCESS:"<<MEMCACHED_SUCCESS<<endl;
     if(rc == MEMCACHED_SUCCESS)
     {
-        cout<<"connect memcached server ok\n";
+        cout<<"connect server ok\n";
         return 1;
     }
     else
     {
-        cout<<"connect memcached server failed\n";
+        cout<<"connect server failed\n";
         return 0;
     }
 }
@@ -77,14 +77,14 @@ int MCConnector::cache_get(char* key, size_t key_len, char* &value, size_t &valu
 
 int MCConnector::cache_set(char* key, size_t key_len, char* value, size_t value_len)
 {
-    cout<<"cache set begin\n";
+    cout<<"mcconnector set begin\n";
     mc_ret rc = memcached_set(memc, key , key_len, value, value_len,expire_time,0);
     if(rc == MEMCACHED_SUCCESS)
     {
-        cout<<"cache set OK\n";
+        cout<<"mcconnector set OK\n";
         return 1;
     }
-    cout<<"cache set failed, result:"<<rc<<"\n";
+    cout<<"mcconnector set failed, result:"<<rc<<"\n";
     return 0;
 }
 

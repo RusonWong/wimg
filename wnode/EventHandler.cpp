@@ -39,7 +39,7 @@ int get_proccessed_file(string temp_key, char* &retbuff, size_t &ret_len,  MCCon
 {
 	
 	int got_file = 0;
-	if( globalConfig.use_memcached)
+	if( globalConfig.use_memcached == 1)
 	{
 		got_file = mc->cache_get((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
 	}
@@ -72,6 +72,16 @@ int get_proccessed_file(string temp_key, char* &retbuff, size_t &ret_len,  MCCon
 			else
 			{
 				cout<<"find file "<<temp_key<<" from LocalStorage\n";
+			}
+		}
+
+		//set cache
+		if(globalConfig.use_memcached == 1)
+		{
+			int cache_set_rt = mc->cache_set((char*)temp_key.c_str(), temp_key.length(), retbuff, ret_len);
+			if(cache_set_rt)
+			{
+				cout<<"set cache of "<<temp_key<<" success\n";
 			}
 		}
 	}
@@ -181,12 +191,12 @@ int on_request_get(const int fd, MCConnector* memcached_connector, MCConnector* 
 	}
 
 	////////////////////get file and resize start/////////////////////
-	
-	
 	int got_file = 0;
 
+	cout<<"config is :"<<globalConfig.use_memcached<<endl;
 	if( globalConfig.use_memcached == 1)
 	{
+		cout<<"try get img from memcached....\n";
 		got_file = memcached_connector->cache_get(buff, imageid_len, buffptr, len);
 	}
 
@@ -357,11 +367,11 @@ int on_request_set(const int fd, MCConnector* memcached_connector, MCConnector* 
 		cache_set_rt = memcached_connector->cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
 		if( cache_set_rt )
 		{
-			cout<<"cache of "<<filePath<<" set success\n";
+			cout<<"cache of "<<new_name<<" set success\n";
 		}
 		else
 		{
-			cout<<"cache of "<<filePath<<" set failed\n";
+			cout<<"cache of "<<new_name<<" set failed\n";
 		}
 	}
 	
@@ -370,11 +380,11 @@ int on_request_set(const int fd, MCConnector* memcached_connector, MCConnector* 
 		cache_set_rt =  beandb_connector->cache_set((char*)new_name.c_str(), new_name.length(), new_img_buff, new_img_len);
 		if( cache_set_rt )
 		{
-			cout<<"save "<<filePath<<" to beansdb success\n";
+			cout<<"save "<<new_name<<" to beansdb success\n";
 		}
 		else
 		{
-			cout<<"save "<<filePath<<" to beansdb failed\n";
+			cout<<"save "<<new_name<<" to beansdb failed\n";
 		}
 	}
 	else if(globalConfig.storage_mode == 1){
@@ -382,7 +392,7 @@ int on_request_set(const int fd, MCConnector* memcached_connector, MCConnector* 
 		int ret = plocalStorage->save_file(new_img_buff, new_img_len, new_name);
 		if(ret == 1)
 		{
-			cout<<"save "<<filePath<<" to local success\n";
+			cout<<"save "<<new_name<<" to local success\n";
 		}
 
 	}
